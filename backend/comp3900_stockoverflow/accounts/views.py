@@ -9,7 +9,7 @@ from rest_framework import status
 
 
 # Create your views here.
-@api_view(['POST'])
+@api_view(['POST', 'GET'])
 def register(request):
     # name = request.POST['name']
     # email = request.POST['email']
