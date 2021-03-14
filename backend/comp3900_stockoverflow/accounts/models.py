@@ -1,6 +1,7 @@
 from django.db import models
 
-class Users(models.Model):
-    name = models.CharField(max_length = 100)
-    email = models.TextField()
-    password = models.TextField()
+
+class User(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
+    # password = models.CharField()
