@@ -1,19 +1,24 @@
 body {
     height: 100%;
     margin: 0;
-    background-color: #ededed;
+    background-color: #f5f5f5;
 }
 
-.page-content {
+.header-nav-bar {
+    justify-content: right;
+}
+
+.segment.auth-container {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+    width: 500px;
+    padding: 40px;
 }
 
-.segment.auth-container {
-    width: 450px;
-    padding: 40px;
+.segment.portfolio {
+    padding: 50px;
 }
 
 code {

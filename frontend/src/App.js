@@ -3,6 +3,7 @@ import {Router, Switch, Route, Redirect} from "react-router-dom";
 import './App.css';
 import Login from './app/Login';
 import Register from './app/Register';
+import Navbar from './app/NavBar';
 import Home from "./app/Home";
 import history from "./history";
 
@@ -27,11 +28,18 @@ export default class App extends Component {
   render() {
     return <Router history={history}>
       <div className={"page-content"}>
-        <Switch>
-          <PrivateRoute exact path={'/'} component={Home}/>
-          <Route exact path={'/register'} component={Register}/>
-          <Route exact path={'/login'} component={Login}/>
-        </Switch>
+        <div className={"header-nav-bar"}>
+          <Navbar/>
+        </div>
+        <br/>
+        <div className={"scrollable-content"}>
+          <Switch>
+            {/*<PrivateRoute exact path={'/'} component={Home}/>*/}
+            <Route exact path={'/home'} component={Home}/>
+            <Route exact path={'/register'} component={Register}/>
+            <Route exact path={'/login'} component={Login}/>
+          </Switch>
+        </div>
       </div>
     </Router>
   }
