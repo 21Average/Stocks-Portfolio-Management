@@ -1,5 +1,5 @@
 """
-ASGI config for comp3900_stockoverflow project.
+ASGI config for telusko project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

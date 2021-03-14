@@ -1,5 +1,5 @@
 """
-WSGI config for comp3900_stockoverflow project.
+WSGI config for telusko project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
