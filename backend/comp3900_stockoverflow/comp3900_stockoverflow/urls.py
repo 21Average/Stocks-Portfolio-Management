@@ -17,9 +17,11 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_jwt.views import obtain_jwt_token
 
 urlpatterns = [
     path('', include('accounts.urls')),
     path('admin/', admin.site.urls),
+    path('token/', obtain_jwt_token),
 ]
 

@@ -36,9 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts',
     'rest_framework',
     'corsheaders',
-    'accounts'
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +81,7 @@ WSGI_APPLICATION = 'comp3900_stockoverflow.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'comp3900',
+        'NAME': 'stockoverflow',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',
@@ -126,3 +127,22 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        ##Determines which authentication methods the server will try when it receives a request
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+
+    'DEFAULT_PERMISSION_CLASSES': (
+        ##Require a request to be authenticated before it is processed 
+        'rest_framework.permissions.AllowAny',
+        
+    ),
+}
+
+##the requests from React 
+CORS_ORIGIN_WHITELIST = [
+    'https://localhost:3000',
+]
