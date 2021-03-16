@@ -14,7 +14,7 @@ export default class NavBar extends Component {
       {name: 'Settings', to: '/settings'},
     ];
 
-    return <Menu inverted size={'huge'}>
+    return <Menu inverted size={'large'}>
       <Menu.Menu position={'right'}>
         {items.map(({name, to}, i) =>
           <Menu.Item name={name} as={NavLink} to={to} key={i} selected={history.location.pathname === to}/>)}

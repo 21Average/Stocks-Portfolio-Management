@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {Segment, Header, Table, Dropdown, Button, Container, Divider} from "semantic-ui-react";
+import NavBar from "./NavBar";
 
 export default class Login extends Component {
   // State is where you store values that the render() function will use
@@ -38,18 +39,22 @@ export default class Login extends Component {
       {key: 'p5', text: 'Portfolio 5', value: 'Portfolio 5'},
     ];
 
-    return <Container><Segment className={'portfolio'}>
-      <Dropdown
-        placeholder='Select a portfolio' fluid selection options={portfolioOptions} onChange={this.handleChange}/>
-      {portfolioName ? <Container>
-        <br/>
-        <Header as='h2' color={'teal'} textAlign={'center'}>{portfolioName}</Header>
-        <Divider hidden/>
-        <Table color={'teal'} celled headerRow={headerRow} renderBodyRow={renderBodyRow} tableData={tableData}/>
-        <Button color={'green'}>Add Stock</Button>
-        <Button color={'red'}>Remove Stock</Button>
-      </Container> : <Header color={'grey'} textAlign={'center'}>Please select a portfolio</Header>}
-    </Segment>
-    </Container>
+    return <React.Fragment>
+      <NavBar/>
+      <Container>
+        <Segment className={'portfolio'}>
+          <Dropdown
+            placeholder='Select a portfolio' fluid selection options={portfolioOptions} onChange={this.handleChange}/>
+          {portfolioName ? <Container>
+            <br/>
+            <Header as='h2' color={'teal'} textAlign={'center'}>{portfolioName}</Header>
+            <Divider hidden/>
+            <Table color={'teal'} celled headerRow={headerRow} renderBodyRow={renderBodyRow} tableData={tableData}/>
+            <Button color={'green'}>Add Stock</Button>
+            <Button color={'red'}>Remove Stock</Button>
+          </Container> : <Header color={'grey'} textAlign={'center'}>Please select a portfolio</Header>}
+        </Segment>
+      </Container>
+    </React.Fragment>
   }
 }
