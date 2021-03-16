@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.models import User, auth
-from .models import User
+#from .models import User
 from rest_framework.decorators import api_view
-from .serializers import UserSerializer
+from .serializers import RegisterSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
+from django.contrib.auth.models import User
 
 # Create your views here.
 @api_view(['POST'])
@@ -23,7 +24,7 @@ def register(request):
     # else:
     #     return render(request, 'register.html')
     # return render(request, 'register.html')
-    serializer = UserSerializer(data=request.data)
+    serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
