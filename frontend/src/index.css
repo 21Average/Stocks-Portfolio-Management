@@ -19,6 +19,7 @@ body {
 
 .segment.portfolio {
     padding: 50px;
+    margin: auto;
 }
 
 code {

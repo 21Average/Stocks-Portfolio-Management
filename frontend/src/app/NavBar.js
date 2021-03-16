@@ -4,8 +4,6 @@ import {NavLink} from "react-router-dom";
 import history from "../history";
 
 export default class NavBar extends Component {
-  state = {
-  };
 
   render() {
     const items = [
@@ -16,13 +14,10 @@ export default class NavBar extends Component {
       {name: 'Settings', to: '/settings'},
     ];
 
-    return <Menu secondary pointing size={'huge'}>
+    return <Menu inverted size={'huge'}>
       <Menu.Menu position={'right'}>
-        {
-          items.map(({name, to}, i) =>
-            <Menu.Item name={name} as={NavLink} to={to} key={i} selected={history.location.pathname === to}/>
-          )
-        }
+        {items.map(({name, to}, i) =>
+          <Menu.Item name={name} as={NavLink} to={to} key={i} selected={history.location.pathname === to}/>)}
       </Menu.Menu>
     </Menu>
   }

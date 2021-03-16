@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Segment, Button, Header, Form, Container, Divider} from "semantic-ui-react";
+import {Segment, Header, Form, Container, Divider} from "semantic-ui-react";
 import {Link} from 'react-router-dom';
 import axios from "axios";
 import history from "../history";
