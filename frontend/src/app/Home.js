@@ -38,17 +38,18 @@ export default class Login extends Component {
       {key: 'p5', text: 'Portfolio 5', value: 'Portfolio 5'},
     ];
 
-    return <Segment className={'portfolio'}>
+    return <Container><Segment className={'portfolio'}>
       <Dropdown
         placeholder='Select a portfolio' fluid selection options={portfolioOptions} onChange={this.handleChange}/>
       {portfolioName ? <Container>
         <br/>
         <Header as='h2' color={'teal'} textAlign={'center'}>{portfolioName}</Header>
         <Divider hidden/>
-        <Table celled headerRow={headerRow} renderBodyRow={renderBodyRow} tableData={tableData}/>
+        <Table color={'teal'} celled headerRow={headerRow} renderBodyRow={renderBodyRow} tableData={tableData}/>
         <Button color={'green'}>Add Stock</Button>
         <Button color={'red'}>Remove Stock</Button>
       </Container> : <Header color={'grey'} textAlign={'center'}>Please select a portfolio</Header>}
     </Segment>
+    </Container>
   }
 }
