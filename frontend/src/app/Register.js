@@ -10,7 +10,8 @@ export default class Register extends Component {
     username: '',
     password1: '',
     password2: '',
-    showErrorMsg: false
+    showErrorMsg: false,
+    errorMsg: ''
   };
 
   handleChange = (e, {name, value}) => {
@@ -21,20 +22,26 @@ export default class Register extends Component {
   handleClick = () => {
     const {username, password1, password2} = this.state;
     if (password1 === password2) {
-      axios({
-        method: 'post', url: `${BACKEND_URL}/register/`,
-        data: {'username': username, 'password': password1}
-      }).then(({data}) => {
-        localStorage.setItem("token", data.token);
-        history.push('/home')
-      }).catch(() => {
-        this.setState({showErrorMsg: true});
-      });
+      if (password1.length >= 8) {
+        axios({
+          method: 'post', url: `${BACKEND_URL}/register/`,
+          data: {'username': username, 'password': password1}
+        }).then(({data}) => {
+          localStorage.setItem("token", data.token);
+          history.push('/home')
+        }).catch(() => {
+          this.setState({errorMsg: 'Account already exists', showErrorMsg: true});
+        });
+      } else {
+        this.setState({errorMsg: 'Password must have at least 8 characters', showErrorMsg: true})
+      }
+    } else {
+      this.setState({errorMsg: 'Passwords do not match', showErrorMsg: true})
     }
   };
 
   render() {
-    const {showErrorMsg} = this.state;
+    const {showErrorMsg, errorMsg} = this.state;
 
     let formContent = [
       {
@@ -73,9 +80,10 @@ export default class Register extends Component {
             iconPosition='left'
             type={type ? type : ''}
             fluid
+            required
             onChange={this.handleChange}/>
         )}
-        {showErrorMsg ? <Message negative>Account already exists</Message> : null}
+        {showErrorMsg ? <Message negative>{errorMsg}</Message> : null}
         <Form.Button color='teal' fluid size='large' onClick={() => {
           this.setState({showErrorMsg: false});
           this.handleClick()
