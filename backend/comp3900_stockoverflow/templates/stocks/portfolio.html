@@ -55,8 +55,15 @@ Manage Portfolio
                 <td>${{stock.week52Low}}</td>
                 <td><a href="{% url 'delete_stock' stock.symbol %}" class="btn btn-outline-danger btn-sm">X</a></td>
             </tr>
+            <img src="{{ img }}">
             {% endfor %}
         </tbody>
       </table>
+      <div class="data_distribution">
+        <div class="show_img">
+            <img src="{{ src }}" alt={stock.symbol}/>
+        </div>
+    </div>
     {% endif%}
 {% endblock %}
+
