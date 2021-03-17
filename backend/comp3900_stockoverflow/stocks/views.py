@@ -19,9 +19,12 @@ def box(title='IQ'):
     high = [26.67,26.27,25.63,26.17,26.011,25.4,26.05,25.799,25.55,26.06,25.38,25.99,25.63,]
     low = [27.25,26.39,26.54,25.46,25.902,26.042,25.694,26.085,25.38,26.043,25.24,25.908,26.25]
     avg = [26.94,26.954,25.51,25.813,25.3,25.289,25.014,25.27,25.73,25.433,26.259,26.227,25.696]
-    plt.stackplot(time,high,low,avg)
+    #plt.stackplot(time,high,low,avg)
     plt.xlabel('time')
     plt.ylabel('Price(USD)')
+    plt.plot(time,high)
+    plt.plot(time,low)
+    plt.plot(time,avg)
     plt.title(title,fontsize = 18)
     plt.legend(['High','Low','Avg'],fontsize = 15)
     sio = BytesIO()
