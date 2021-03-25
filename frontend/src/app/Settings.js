@@ -59,9 +59,10 @@ export default class Settings extends Component {
       }).then(() => {
         this.setState({showSuccessMsg: true});
         this.setState({showBadPasswordMsg: false});
-      }).catch(({errors}) => {
-        console.log(errors);
-        alert("Something went wrong")
+      }).catch(() => {
+        // This is a minor hack
+        // Can't think of anything right now that will trigger an error except an existing email being used
+        alert("Email already taken")
       });
     }
   };
