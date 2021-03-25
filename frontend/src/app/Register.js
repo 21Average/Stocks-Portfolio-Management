@@ -7,7 +7,9 @@ import history from "../history";
 
 export default class Register extends Component {
   state = {
-    username: '',
+    email: '',
+    firstName: '',
+    lastName: '',
     password1: '',
     password2: '',
     showErrorMsg: false,
@@ -18,14 +20,13 @@ export default class Register extends Component {
     this.setState({[name]: value});
   };
 
-
   handleClick = () => {
-    const {username, password1, password2} = this.state;
+    const {email, firstName, lastName, password1, password2} = this.state;
     if (password1 === password2) {
       if (password1.length >= 8) {
         axios({
           method: 'post', url: `${BACKEND_URL}/register/`,
-          data: {'username': username, 'password': password1}
+          data: {'first_name': firstName, 'last_name': lastName, 'email': email, 'password': password1}
         }).then(({data}) => {
           localStorage.setItem("token", data.token);
           history.push('/home')
@@ -45,9 +46,19 @@ export default class Register extends Component {
 
     let formContent = [
       {
-        name: 'username',
-        icon: 'user',
-        placeholder: 'Enter a username',
+        name: 'firstName',
+        label: 'First name',
+        placeholder: 'Enter your first name',
+      },
+      {
+        name: 'lastName',
+        label: 'Last name',
+        placeholder: 'Enter your last name',
+      },
+      {
+        name: 'email',
+        icon: 'mail',
+        placeholder: 'Enter your email',
       },
       {
         name: 'password1',
@@ -70,19 +81,16 @@ export default class Register extends Component {
       </Header>
       <Divider/>
       <Form onSubmit={this.handleSubmit}>
+        <Form.Group widths='equal'>
+          {formContent.map(({name, label, value, placeholder}, i) =>
+            i < 2 ? <Form.Input
+              key={i} placeholder={placeholder} name={name} value={value} label={label}
+              onChange={this.handleChange}/> : null)}
+        </Form.Group>
         {formContent.map(({name, value, icon, placeholder, type}, i) =>
-          <Form.Input
-            key={i}
-            placeholder={placeholder}
-            name={name}
-            value={value}
-            icon={icon}
-            iconPosition='left'
-            type={type ? type : ''}
-            fluid
-            required
-            onChange={this.handleChange}/>
-        )}
+          i > 1 ? <Form.Input
+            key={i} placeholder={placeholder} name={name} value={value} icon={icon} iconPosition={'left'}
+            type={type ? type : ''} fluid required onChange={this.handleChange}/> : null)}
         {showErrorMsg ? <Message negative>{errorMsg}</Message> : null}
         <Form.Button color='teal' fluid size='large' onClick={() => {
           this.setState({showErrorMsg: false});

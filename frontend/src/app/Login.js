@@ -7,7 +7,7 @@ import {BACKEND_URL} from "../defaults";
 
 export default class Login extends Component {
   state = {
-    username: '',
+    email: '',
     password: '',
     showErrorMsg: false
   };
@@ -16,14 +16,13 @@ export default class Login extends Component {
     this.setState({[name]: value});
   };
 
-
   handleClick = () => {
-    const {username, password} = this.state;
+    const {email, password} = this.state;
     axios({
       method: 'post', url: `${BACKEND_URL}/login/`,
-      data: {'username': username, 'password': password}
+      data: {'email': email, 'password': password}
     }).then(({data}) => {
-      localStorage.setItem("token", data);
+      localStorage.setItem("token", data['token']);
       history.push('/home')
     }).catch(() => {
       this.setState({showErrorMsg: true});
@@ -40,7 +39,7 @@ export default class Login extends Component {
       </Header>
       <Divider/>
       <Form>
-        <Form.Input fluid icon='user' iconPosition='left' name={'username'} placeholder='Enter your username'
+        <Form.Input fluid icon='mail' iconPosition='left' name={'email'} placeholder='Enter your email'
                     onChange={this.handleChange}/>
         <Form.Input fluid icon='lock' iconPosition='left' name={'password'} placeholder='Enter your password'
                     type='password' onChange={this.handleChange}/>
@@ -50,7 +49,7 @@ export default class Login extends Component {
         <br/>
         <Form.Button color='teal' fluid size='large' onClick={this.handleClick}>Login</Form.Button>
       </Form>
-      {showErrorMsg ? <Message negative>Incorrect username or password</Message> : null}
+      {showErrorMsg ? <Message negative>Incorrect email or password</Message> : null}
       <Divider hidden/>
       <Container textAlign={'center'}>
         Not registered? <Link to={"/register"}>Sign up here</Link>
