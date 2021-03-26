@@ -1,48 +1,59 @@
 import React, {Component} from "react";
-import {Segment, Button, Header, Form, Container, Divider} from "semantic-ui-react";
-import {Link} from 'react-router-dom';
+import {Segment, Header, Form, Container, Divider, Message} from "semantic-ui-react";
+import {Link} from "react-router-dom";
 import axios from "axios";
+import {BACKEND_URL} from "../defaults";
 import history from "../history";
 
 export default class Register extends Component {
   state = {
-    name: '',
     email: '',
+    firstName: '',
+    lastName: '',
     password1: '',
-    password2: ''
+    password2: '',
+    showErrorMsg: false,
+    errorMsg: ''
   };
 
   handleChange = (e, {name, value}) => {
     this.setState({[name]: value});
   };
 
-  handleSubmit = () => {
-    const {name, email} = this.state;
-    this.setState({submittedName: name, submittedEmail: email})
-  };
-
   handleClick = () => {
-    const {name, email, password1, password2} = this.state;
+    const {email, firstName, lastName, password1, password2} = this.state;
     if (password1 === password2) {
-      axios({
-        method: 'post',
-        url: 'http://127.0.0.1:8000/register/',
-        data: {'name': name, 'email': email}
-      }).then((response) => {
-        console.log(response);
-        history.push('/home')
-      }).catch((response) => {
-        console.log(response)
-      });
+      if (password1.length >= 8) {
+        axios({
+          method: 'post', url: `${BACKEND_URL}/register/`,
+          data: {'first_name': firstName, 'last_name': lastName, 'email': email, 'password': password1}
+        }).then(({data}) => {
+          localStorage.setItem("token", data.token);
+          history.push('/home')
+        }).catch(() => {
+          this.setState({errorMsg: 'Account already exists', showErrorMsg: true});
+        });
+      } else {
+        this.setState({errorMsg: 'Password must have at least 8 characters', showErrorMsg: true})
+      }
+    } else {
+      this.setState({errorMsg: 'Passwords do not match', showErrorMsg: true})
     }
   };
 
   render() {
+    const {showErrorMsg, errorMsg} = this.state;
+
     let formContent = [
       {
-        name: 'name',
-        icon: 'user',
-        placeholder: 'Enter your name',
+        name: 'firstName',
+        label: 'First name',
+        placeholder: 'Enter your first name',
+      },
+      {
+        name: 'lastName',
+        label: 'Last name',
+        placeholder: 'Enter your last name',
       },
       {
         name: 'email',
@@ -50,13 +61,13 @@ export default class Register extends Component {
         placeholder: 'Enter your email',
       },
       {
-        name: 'password',
+        name: 'password1',
         icon: 'lock',
         placeholder: 'Enter your password',
         type: 'password',
       },
       {
-        name: 'password_2',
+        name: 'password2',
         icon: 'lock',
         placeholder: 'Re-type your password',
         type: 'password',
@@ -70,19 +81,21 @@ export default class Register extends Component {
       </Header>
       <Divider/>
       <Form onSubmit={this.handleSubmit}>
+        <Form.Group widths='equal'>
+          {formContent.map(({name, label, value, placeholder}, i) =>
+            i < 2 ? <Form.Input
+              key={i} placeholder={placeholder} name={name} value={value} label={label}
+              onChange={this.handleChange}/> : null)}
+        </Form.Group>
         {formContent.map(({name, value, icon, placeholder, type}, i) =>
-          <Form.Input
-            key={i}
-            placeholder={placeholder}
-            name={name}
-            value={value}
-            icon={icon}
-            iconPosition='left'
-            type={type ? type : ''}
-            fluid
-            onChange={this.handleChange}/>
-        )}
-        <Form.Button color='teal' fluid size='large' onClick={this.handleClick}>Register</Form.Button>
+          i > 1 ? <Form.Input
+            key={i} placeholder={placeholder} name={name} value={value} icon={icon} iconPosition={'left'}
+            type={type ? type : ''} fluid required onChange={this.handleChange}/> : null)}
+        {showErrorMsg ? <Message negative>{errorMsg}</Message> : null}
+        <Form.Button color='teal' fluid size='large' onClick={() => {
+          this.setState({showErrorMsg: false});
+          this.handleClick()
+        }}>Register</Form.Button>
       </Form>
       <Divider hidden/>
       <Container textAlign={'center'}>

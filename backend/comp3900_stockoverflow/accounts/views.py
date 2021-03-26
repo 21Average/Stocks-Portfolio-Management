@@ -1,34 +1,37 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.contrib.auth.models import User, auth
-#from .models import User
-from rest_framework.decorators import api_view
-from .serializers import RegisterSerializer
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+from .models import CustomUser
+from .serializers import RegisterSerializer, UserSerializer, UserPasswordSerializer
 
-from django.contrib.auth.models import User
 
-# Create your views here.
-@api_view(['POST'])
-def register(request):
-    # name = request.POST['name']
-    # email = request.POST['email']
-    #     # password1 = request.POST['password1']
-    #     # password2 = request.POST['password2']
-    #     print(name)
-    #     print(email)
-    #     user = Users.objects.create(name=name, email=email)
-    #     print(user, 'user created')
-    #     pass
-    # else:
-    #     return render(request, 'register.html')
-    # return render(request, 'register.html')
-    serializer = RegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class Register(CreateAPIView):
+    model = CustomUser
+    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
+
+
+class UserDetail(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+    def patch(self, request, *args, **kwargs):
+        if 'password' in request.data:
+            # update password
+            serialized = UserPasswordSerializer(data=request.data)
+            if serialized.is_valid():
+                user = self.get_object()
+                user.set_password(serialized.data['password'])
+                user.save()
+            else:
+                return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+        # update everything else
+        return self.partial_update(request, *args, **kwargs)
 
 
 def add(request):
