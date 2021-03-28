@@ -10,20 +10,20 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError('Email must be set')
         email = self.normalize_email(email)
-        user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
+        user = self.model(email=email, first_name=first_name, last_name=last_name, is_active=True, **extra_fields)
         user.set_password(password)
         user.save()
         return user
 
     def create_user(self, email, password=None, **extra_fields):
-        return self._create_user(email=email, password=password, is_active=True, **extra_fields)
+        return self._create_user(email=email, password=password, **extra_fields)
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_staff', True)
         if extra_fields.get('is_superuser') is not True or extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_superuser=True and is_staff=True.')
-        return self._create_user(email=email, password=password, is_active=True, **extra_fields)
+        return self._create_user(email=email, password=password, **extra_fields)
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -42,14 +42,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
-
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
-        if password is not None:
-            instance.set_password(password)
-        instance.save()
-        return instance
 
     def __str__(self):
         return self.get_full_name()
