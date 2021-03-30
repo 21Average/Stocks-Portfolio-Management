@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Create Portfolio
+{% endblock %}
+
+{% block content %}
+    <br>
+    <h2>Portfolio</h2>
+    <hr>
+
+    <form method="POST" action="{% url 'stocks:createPortfolio' %}" class="form-inline my-2 my-lg-0">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Create New Portfolio</button>
+
+    </form>
+
+    <table class="table table-striped table-bordered table-hover table-sm">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Portfolio Name</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for portfolio in portfolio_list %}
+            <tr>
+                <td><a href="{% url 'stocks:manageWatchList' portfolio.pk %}">{{portfolio.name}}</a></td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+{% endblock %}
