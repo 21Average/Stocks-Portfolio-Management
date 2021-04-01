@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
 
 {% block title %}
-Manage Portfolio
+Manage Watch List
 {% endblock %}
 
 {% block content %}
     <br>
     <h2>Portfolio Summary</h2>
+    <h2>{{portfolio.ptype}}</h2>
     <hr>
 
     <form method="POST" action="{% url 'stocks:manageWatchList' portfolio.pk %}" class="form-inline my-2 my-lg-0">

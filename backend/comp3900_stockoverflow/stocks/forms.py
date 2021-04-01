@@ -21,4 +21,4 @@ class WatchListManageForm(forms.ModelForm):
 class PortfolioManageForm(forms.ModelForm):
     class Meta:
         model = Stock
-        fields = ['ticker']
+        fields = ['ticker','quality','buying_price']

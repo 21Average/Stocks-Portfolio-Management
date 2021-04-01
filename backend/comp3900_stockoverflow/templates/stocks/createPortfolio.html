@@ -25,9 +25,18 @@ Create Portfolio
 
         <tbody>
             {% for portfolio in portfolio_list %}
+                {% if portfolio.ptype == 'WatchList'%}
             <tr>
                 <td><a href="{% url 'stocks:manageWatchList' portfolio.pk %}">{{portfolio.name}}</a></td>
+                <td>{{portfolio.ptype}}</td>
             </tr>
+                 {% endif %}
+                {% if portfolio.ptype == 'Portfolio'%}
+            <tr>
+                <td><a href="{% url 'stocks:managePortfolio' portfolio.pk %}">{{portfolio.name}}</a></td>
+                <td>{{portfolio.ptype}}</td>
+            </tr>
+                 {% endif %}
             {% endfor %}
 
         </tbody>

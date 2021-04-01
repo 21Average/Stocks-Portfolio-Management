@@ -50,11 +50,13 @@ def check_valid_stock_ticker(stock_ticker):
     return False
 
 
-def check_stock_ticker_existed(stock_ticker):
+def check_stock_ticker_existed(stock_ticker,portfolio):
     try:
-        stock = Stock.objects.get(ticker=stock_ticker)
-        if stock:
-            return True
+        stockdata = portfolio.stock_list
+        if portfolio.stock_list:
+            ticker_list = portfolio.stock_list
+            if stock_ticker in ticker_list:
+                return True
     except Exception:
         return False
 
@@ -77,7 +79,7 @@ def watchList_manage_form(request, portfolio_pk):
 
             if form.is_valid():
                 
-                if check_stock_ticker_existed(ticker):
+                if check_stock_ticker_existed(ticker,portfolio):
                     messages.warning(
                         request, f'{ticker} is already existed in Portfolio.')
                     return HttpResponseRedirect("") 
@@ -157,8 +159,9 @@ def portfolio_create_form(request):
             #form.stock_list = [99]
             form.save()
             if form.ptype == "WatchList":
-                #return redirect('manageWatchList')
                 return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
+            elif form.ptype == "Portfolio":
+                return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
 
 
     context = {
@@ -168,6 +171,57 @@ def portfolio_create_form(request):
     return render(request, 'stocks/createPortfolio.html',context)
 
 
-def portfolio_manage_form(request):
-    return render(request, 'stocks/managePortfolio.html')
+def portfolio_manage_form(request,portfolio_pk):
+    portfolio = Portfolio.objects.get(pk=portfolio_pk)
+    if request.method == 'POST':
+        ticker = request.POST['ticker']
+        quality = request.POST['quality']
+        buying_price = request.POST['buying_price']
+
+        if ticker:
+            form = PortfolioManageForm(request.POST or None)
+
+            if form.is_valid():
+                
+                if check_stock_ticker_existed(ticker,portfolio):
+                    messages.warning(
+                        request, f'{ticker} is already existed in Portfolio.')
+                    return HttpResponseRedirect("") 
+
+                if check_valid_stock_ticker(ticker):
+                    if portfolio.stock_list:
+                        portfolio.stock_list.append(f'{ticker}')
+                    else:
+                        portfolio.stock_list = [f'{ticker}']
+                    portfolio.save()
+                    form = form.save(commit=False)
+                    form.portfoilo = portfolio
+                    form.save()
+                    messages.success(
+                        request, f'{ticker} has been added successfully.')
+                    return HttpResponseRedirect("") 
+
+        messages.warning(request, 'Please enter a valid ticker name.')
+        return HttpResponseRedirect("") 
+    
+    else:
+        user_stock = list(Stock.objects.filter(portfoilo=portfolio_pk))
+        stockdata = portfolio.stock_list
+        if portfolio.stock_list:
+            ticker_list = portfolio.stock_list
+
+            tickers = ','.join(ticker_list)
+            base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
+            stockdata = search_stock_batch(base_url, tickers)
+        else:
+            messages.info(
+                request, 'Currently, there are no stocks in your portfolio!')
+
+        context = {
+            'stockdata': zip(stockdata,user_stock),
+            'portfolio': portfolio,
+            #'user_stocks':user_stock
+        }
+        return render(request, 'stocks/managePortfolio.html', context)
+
 
