@@ -23,5 +23,6 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('admin/', admin.site.urls),
     path('token/', obtain_jwt_token),
+    path('stocks/', include('stocks.urls',namespace='stocks')),
 ]
 

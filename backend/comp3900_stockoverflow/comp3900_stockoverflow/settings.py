@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
+    'stocks',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +83,7 @@ WSGI_APPLICATION = 'comp3900_stockoverflow.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'comp3900',
+        'NAME': 'comp3900_8',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',
@@ -158,3 +159,5 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_WHITELIST = [
     'https://localhost:3000',
 ]
+
+IEXCLOUD_TEST_API_TOKEN = 'Tpk_025a1db8373d4d868815230e534ccc91'
