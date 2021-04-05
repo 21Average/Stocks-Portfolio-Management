@@ -1,102 +1,63 @@
 import React, {Component} from "react";
-import {Segment, Header, Table, Button, Container, Divider, Modal, Grid, Form} from "semantic-ui-react";
+import {Segment, Header, Table, Container, Divider, Grid} from "semantic-ui-react";
 import NavBar from "./NavBar";
+import AddPortfolioModal from "./AddPortfolioModal";
+import EditPortfolioModal from "./EditPortfolioModal";
+import RemovePortfolioModal from "./RemovePortfolioModal";
+import axios from "axios";
+import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
 
 export default class PortfolioList extends Component {
   state = {
     portfolioList: [],
-    openEditPortfolioModal: false,
-    openCreatePortfolioModal: false,
-    openRemovePortfolioModal: false,
+    openEditModal: false,
     selectedPortfolio: {},
-    portfolioNameValue: '',
-    portfolioTypeValue: '',
     portfoliosToRemove: [],
   };
 
-  handleSubmitPortfolio = () => {
-    const {portfolioNameValue, portfolioTypeValue} = this.state;
-    let newPortfolio = {
-      key: portfolioNameValue + portfolioTypeValue, // need to change to something unique
-      name: portfolioNameValue,
-      type: portfolioTypeValue,
-      created: new Date().toLocaleString()
-    };
-    this.setState({openCreatePortfolioModal: false, portfolioList: [...this.state.portfolioList, newPortfolio]});
-  };
-
-  handlePortNameChange = (e, {value}) => {
-    this.setState({portfolioNameValue: value});
-  };
-  handlePortTypeChange = (e, {value}) => {
-    this.setState({portfolioTypeValue: value});
-  };
-  handleCheckBoxChange = (e, {value}) => {
-    const {portfoliosToRemove} = this.state;
-    let i = portfoliosToRemove.indexOf(value);
-    if (i === -1) {
-      this.setState({portfoliosToRemove: [...portfoliosToRemove, value]})
-    } else {
-      portfoliosToRemove.splice(i, 1)
+  componentDidMount() {
+    const token = localStorage.getItem("token");
+    if (token) {
+      axios({
+        headers: AXIOS_HEADER(token),
+        method: 'get', url: `${BACKEND_URL}/stocks/getPortfolios/`
+      }).then(({data}) => {
+        this.setState({portfolioList: data})
+      }).catch(({error}) => {
+        alert(error)
+      })
     }
-  };
-
-  handleCloseModal = (modalType) => {
-    if (modalType === 'add') {
-      this.setState({openCreatePortfolioModal: false})
-    } else if (modalType === 'edit') {
-      this.setState({openEditPortfolioModal: false})
-    } else {
-      this.setState({openRemovePortfolioModal: false})
-    }
-  };
+  }
 
   handleEditPortfolio = (i) => {
     // open modal
     const {portfolioList} = this.state;
     if (portfolioList[i]) {
       this.setState({
-        openEditPortfolioModal: true,
+        openEditModal: true,
         selectedPortfolio: portfolioList[i]
       })
     } else {
       alert('Something went wrong')
     }
   };
-
-  handleRemovePortfolio = () => {
-    const {portfoliosToRemove} = this.state;
-    this.setState({openRemovePortfolioModal: false, portfoliosToRemove})
-  };
+  handleClose = () => this.setState({openEditModal: false});
 
   render() {
-    const {portfolioList, openEditPortfolioModal, selectedPortfolio, openCreatePortfolioModal, openRemovePortfolioModal, portfolioTypeValue} = this.state;
+    const {portfolioList, selectedPortfolio, openEditModal} = this.state;
     // These are sample headers for the table. We can change this depending on the data we get from the backend
-    const headerRow = ['Name', 'Type', 'Created'];
-    const portfolioTypes = [{name: 'Transaction'}, {name: 'Watchlist'}];
+    const headerRow = ['Name', 'Type', 'Description'];
 
     return <React.Fragment>
       <NavBar/>
       <Container>
         <Segment className={'portfolio'}>
-          {openEditPortfolioModal ?
-            <Modal
-              open={openEditPortfolioModal}>
-              <Header as={'h1'}>Edit "{selectedPortfolio['name']}"</Header>
-              <Modal.Content>
-                <Form onSubmit={this.handleSubmit}>
-                  <Form.Input label={'Name'}/>
-                </Form>
-              </Modal.Content>
-              <Modal.Actions>
-                <Button onClick={this.handleSubmit} positive>Save</Button>
-                <Button onClick={() => this.handleCloseModal('edit')}>Cancel</Button>
-              </Modal.Actions>
-            </Modal> : null}
+          {openEditModal ?
+            <EditPortfolioModal open={openEditModal} onClose={this.handleClose} selected={selectedPortfolio}/> : null}
           <Container>
             <Header as='h2' color={'teal'} textAlign={'center'}>Portfolios</Header>
             <Divider hidden/>
-            <Grid>
+            {portfolioList && portfolioList.length > 0 ? <Grid>
               <Grid.Row>
                 <Table color={'teal'} selectable>
                   <Table.Header>
@@ -106,62 +67,25 @@ export default class PortfolioList extends Component {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {portfolioList.map(({name, type, created, modified, change}, i) =>
+                    {portfolioList.map(({name, ptype, desc}, i) =>
                       <Table.Row key={i} onClick={() => this.handleEditPortfolio(i)}>
                         <Table.Cell>{name}</Table.Cell>
-                        <Table.Cell>{type}</Table.Cell>
-                        <Table.Cell>{created}</Table.Cell>
+                        <Table.Cell>{ptype}</Table.Cell>
+                        <Table.Cell>{desc}</Table.Cell>
                       </Table.Row>)}
                   </Table.Body>
                 </Table>
               </Grid.Row>
               <Grid.Row>
-                <Modal
-                  onOpen={() => this.setState({openCreatePortfolioModal: true})}
-                  open={openCreatePortfolioModal}
-                  trigger={<Button color={'green'}>Add Portfolio</Button>}>
-                  <Modal.Header>Add new portfolio</Modal.Header>
-                  <Modal.Content>
-                    <Form>
-                      <Form.Input label={'Portfolio name'} onChange={this.handlePortNameChange}/>
-                      <Form.Group inline>
-                        <label>Type</label>
-                        {portfolioTypes.map(({name}, i) =>
-                          <Form.Radio
-                            key={i}
-                            label={name}
-                            value={name}
-                            checked={portfolioTypeValue === name}
-                            onChange={this.handlePortTypeChange}/>
-                        )}
-                      </Form.Group>
-                    </Form>
-                  </Modal.Content>
-                  <Modal.Actions>
-                    <Button onClick={this.handleSubmitPortfolio} positive>Add</Button>
-                    <Button onClick={() => this.handleCloseModal('add')}>Cancel</Button>
-                  </Modal.Actions>
-                </Modal>
-                <Modal
-                  onOpen={() => this.setState({openRemovePortfolioModal: true})}
-                  open={openRemovePortfolioModal}
-                  trigger={<Button color={'red'}>Remove Portfolio</Button>}>
-                  <Modal.Header>Remove portfolio</Modal.Header>
-                  <Modal.Content>
-                    <Form>
-                      {portfolioList && portfolioList.length > 0 ? <Form.Group>
-                        {portfolioList.map(({name}, i) =>
-                          <Form.Checkbox key={i} value={name} label={name} onChange={this.handleCheckBoxChange}/>)}
-                      </Form.Group> : <Header disabled>No portfolios to delete</Header>}
-                    </Form>
-                  </Modal.Content>
-                  <Modal.Actions>
-                    <Button onClick={this.handleRemovePortfolio} negative>Remove</Button>
-                    <Button onClick={() => this.handleCloseModal('delete')}>Cancel</Button>
-                  </Modal.Actions>
-                </Modal>
+                <AddPortfolioModal/>
+                <RemovePortfolioModal portfolioList={portfolioList}/>
               </Grid.Row>
-            </Grid>
+            </Grid> : <Container textAlign={'center'}>
+              <Header disabled as='h2'>It seems you don't have any portfolios</Header>
+              <Header disabled as='h2'>Add one below to begin</Header>
+              <br/>
+              <AddPortfolioModal/>
+            </Container>}
           </Container>
         </Segment>
       </Container>

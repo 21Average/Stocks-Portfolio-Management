@@ -7,6 +7,13 @@ from .models import Stock, Portfolio
 from .forms import PortfolioCreateForm, PortfolioManageForm,WatchListManageForm
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
+from .serializers import PortfolioSerializer, StockSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 
 def search_stock(url, stock_ticker):
     my_token = settings.IEXCLOUD_TEST_API_TOKEN
@@ -148,27 +155,27 @@ def watchList_manage_form(request, portfolio_pk):
 #     messages.success(request, f'{stock.ticker} has been deleted successfully.')
 #     return redirect('manageWatchList')
 
-def portfolio_create_form(request):
-
-    portfolio_list = Portfolio.objects.all()
-    form = PortfolioCreateForm()
-    if request.method == "POST":
-        form = PortfolioCreateForm(request.POST or None)
-        if form.is_valid():
-            form = form.save(commit=False)
-            #form.stock_list = [99]
-            form.save()
-            if form.ptype == "WatchList":
-                return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
-            elif form.ptype == "Portfolio":
-                return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
-
-
-    context = {
-        'portfolio_list': portfolio_list,
-        'form':form
-    }
-    return render(request, 'stocks/createPortfolio.html',context)
+# def portfolio_create_form(request):
+#
+#     portfolio_list = Portfolio.objects.all()
+#     form = PortfolioCreateForm()
+#     if request.method == "POST":
+#         form = PortfolioCreateForm(request.POST or None)
+#         if form.is_valid():
+#             form = form.save(commit=False)
+#             #form.stock_list = [99]
+#             form.save()
+#             if form.ptype == "WatchList":
+#                 return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
+#             elif form.ptype == "Portfolio":
+#                 return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
+#
+#
+#     context = {
+#         'portfolio_list': portfolio_list,
+#         'form':form
+#     }
+#     return render(request, 'stocks/createPortfolio.html',context)
 
 
 def portfolio_manage_form(request,portfolio_pk):
@@ -225,3 +232,86 @@ def portfolio_manage_form(request,portfolio_pk):
         return render(request, 'stocks/managePortfolio.html', context)
 
 
+# IMPLEMENTATION FOR FRONT-END
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def portfolio_create_form(request):
+    if request.method == "POST":
+        request.data['owner'] = request.user.id
+        serialized = PortfolioSerializer(data=request.data)
+        if serialized.is_valid():
+            serialized.save()
+            return Response(serialized.data, status=HTTP_201_CREATED)
+        else:
+            return Response(serialized.errors, status=HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_portfolio_list(request):
+    if request.method == "GET":
+        owner_id = request.user.id
+        portfolios = Portfolio.objects.filter(owner_id=owner_id).order_by('id')
+        serialized = PortfolioSerializer(portfolios, many=True)
+        if serialized:
+            return Response(serialized.data, status=HTTP_200_OK)
+        else:
+            return Response({"error": "something went wrong"}, status=HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_stock(request, portfolio_pk):
+    portfolio = Portfolio.objects.get(pk=portfolio_pk)
+    if request.method == 'POST':
+        ticker = request.data['ticker']
+
+        if ticker:
+            if check_stock_ticker_existed(ticker, portfolio):
+                return Response({"error": f'{ticker} is already in Portfolio'}, status=HTTP_400_BAD_REQUEST)
+
+            if check_valid_stock_ticker(ticker):
+                # create stock
+                request.data['portfolio'] = portfolio_pk
+                serializer = StockSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    # add to portfolio and save
+                    if portfolio.stock_list:
+                        portfolio.stock_list.append(f'{ticker}')
+                    else:
+                        portfolio.stock_list = [f'{ticker}']
+                    portfolio.save()
+                    return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response({"error": "invalid ticker"}, status=HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_stock_data(request, portfolio_pk):
+    if request.method == "GET":
+        portfolio = Portfolio.objects.get(pk=portfolio_pk)
+        if portfolio.stock_list:
+            # get data from api
+            ticker_list = portfolio.stock_list
+            tickers = ','.join(ticker_list)
+            base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
+            stock_data = search_stock_batch(base_url, tickers)
+            # get data from db and combine, then send to front-end
+            data = []
+            for stock in stock_data:
+                stock_db = Stock.objects.get(ticker=stock['symbol'], portfolio_id=portfolio_pk)
+                data.append({
+                    "symbol": stock["symbol"],
+                    "companyName": stock["companyName"],
+                    "latestPrice": stock["latestPrice"],
+                    "quality": stock_db.quality,
+                    "buyingPrice": stock_db.buying_price
+                })
+            return Response(data, status=HTTP_200_OK)
+        else:
+            return Response({"error": "Currently, there are no stocks in your portfolio!"}, status=HTTP_400_BAD_REQUEST)
