@@ -20,7 +20,7 @@ export default class PortfolioList extends Component {
       key: portfolioNameValue + portfolioTypeValue, // need to change to something unique
       name: portfolioNameValue,
       type: portfolioTypeValue,
-      created: new Date().toLocaleString()
+      created: new Date().toLocaleDateString()
     };
     this.setState({openCreatePortfolioModal: false, portfolioList: [...this.state.portfolioList, newPortfolio]});
   };
