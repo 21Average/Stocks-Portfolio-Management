@@ -274,18 +274,20 @@ def add_stock(request, portfolio_pk):
                 return Response({"error": f'{ticker} is already in Portfolio'}, status=HTTP_400_BAD_REQUEST)
 
             if check_valid_stock_ticker(ticker):
-                # create stock
-                request.data['portfolio'] = portfolio_pk
-                serializer = StockSerializer(data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    # add to portfolio and save
-                    if portfolio.stock_list:
-                        portfolio.stock_list.append(f'{ticker}')
-                    else:
-                        portfolio.stock_list = [f'{ticker}']
-                    portfolio.save()
+                # Watchlist stock: just add to portfolio and save
+                if portfolio.stock_list:
+                    portfolio.stock_list.append(f'{ticker}')
+                else:
+                    portfolio.stock_list = [f'{ticker}']
+                portfolio.save()
+                if portfolio.ptype == 'Transaction':
+                    # Transaction stock: add to portfolio and save to db
+                    request.data['portfolio'] = portfolio_pk
+                    serializer = StockSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save()
                     return Response(serializer.data, status=HTTP_201_CREATED)
+                return Response(status=HTTP_201_CREATED)
         return Response({"error": "invalid ticker"}, status=HTTP_400_BAD_REQUEST)
 
 
@@ -301,17 +303,32 @@ def get_stock_data(request, portfolio_pk):
             tickers = ','.join(ticker_list)
             base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
             stock_data = search_stock_batch(base_url, tickers)
-            # get data from db and combine, then send to front-end
             data = []
-            for stock in stock_data:
-                stock_db = Stock.objects.get(ticker=stock['symbol'], portfolio_id=portfolio_pk)
-                data.append({
-                    "symbol": stock["symbol"],
-                    "companyName": stock["companyName"],
-                    "latestPrice": stock["latestPrice"],
-                    "quality": stock_db.quality,
-                    "buyingPrice": stock_db.buying_price
-                })
-            return Response(data, status=HTTP_200_OK)
-        else:
-            return Response({"error": "Currently, there are no stocks in your portfolio!"}, status=HTTP_400_BAD_REQUEST)
+            if portfolio.ptype == 'Transaction':
+                for stock in stock_data:
+                    # get data from db and combine, then send to front-end
+                    stock_db = Stock.objects.get(ticker=stock['symbol'], portfolio_id=portfolio_pk)
+                    data.append({
+                        "symbol": stock["symbol"],
+                        "companyName": stock["companyName"],
+                        "latestPrice": stock["latestPrice"],
+                        "quality": stock_db.quality,
+                        "buyingPrice": stock_db.buying_price
+                    })
+            elif portfolio.ptype == 'Watchlist':
+                for stock in stock_data:
+                    # pick specific data we want to display and then send to front-end
+                    data.append({
+                        "symbol": stock["symbol"],
+                        "companyName": stock["companyName"],
+                        "latestPrice": stock["latestPrice"],
+                        "previousClose": stock["previousClose"],
+                        "marketCap": stock["marketCap"],
+                        "ytdChange": round(stock["ytdChange"], 2),
+                        "peRatio": stock["peRatio"],
+                        "week52High": stock["week52High"],
+                        "week52Low": stock["week52Low"]
+                    })
+            if data and len(data) > 0:
+                return Response(data, status=HTTP_200_OK)
+        return Response({"error": "Currently, there are no stocks in your portfolio!"}, status=HTTP_400_BAD_REQUEST)

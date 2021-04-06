@@ -29,6 +29,7 @@ export default class AddStockModal extends Component {
         // this.handleClose();
         localStorage.setItem("p_id", this.props.pID);
         localStorage.setItem("p_name", this.props.pName);
+        localStorage.setItem("p_type", this.props.pType);
         window.location.reload();
       }).catch(({error}) => {
         alert(error)
@@ -44,11 +45,13 @@ export default class AddStockModal extends Component {
       trigger={<Button positive onClick={() => this.setState({openModal: true})}>Add Stock</Button>}>
       <Modal.Header>Add new stock</Modal.Header>
       <Modal.Content>
-        <Form>
+        {this.props.pType === 'Transaction' ? <Form>
           <Form.Input label={'Stock Name'} name={'name'} onChange={this.handleChange}/>
-          <Form.Input label={'Buying price'} name={'price'} onChange={this.handleChange}/>
+          <Form.Input label={'Buying price'} placeholder={'round to 2 decimal places'} name={'price'} onChange={this.handleChange}/>
           <Form.Input label={'Quantity'} name={'quantity'} onChange={this.handleChange}/>
-        </Form>
+        </Form> : <Form>
+          <Form.Input label={'Stock Name'} name={'name'} onChange={this.handleChange}/>
+        </Form>}
       </Modal.Content>
       <Modal.Actions>
         <Button onClick={this.handleAdd} positive>Add</Button>

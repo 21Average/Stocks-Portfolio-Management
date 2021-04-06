@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Segment, Header, Table, Container, Divider, Grid} from "semantic-ui-react";
+import {Segment, Header, Table, Container, Divider, Grid, Loader} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import AddPortfolioModal from "./AddPortfolioModal";
 import EditPortfolioModal from "./EditPortfolioModal";
@@ -13,16 +13,18 @@ export default class PortfolioList extends Component {
     openEditModal: false,
     selectedPortfolio: {},
     portfoliosToRemove: [],
+    isLoading: false,
   };
 
   componentDidMount() {
+    this.setState({isLoading: true});
     const token = localStorage.getItem("token");
     if (token) {
       axios({
         headers: AXIOS_HEADER(token),
         method: 'get', url: `${BACKEND_URL}/stocks/getPortfolios/`
       }).then(({data}) => {
-        this.setState({portfolioList: data})
+        this.setState({portfolioList: data, isLoading: false})
       }).catch(({error}) => {
         alert(error)
       })
@@ -44,7 +46,7 @@ export default class PortfolioList extends Component {
   handleClose = () => this.setState({openEditModal: false});
 
   render() {
-    const {portfolioList, selectedPortfolio, openEditModal} = this.state;
+    const {portfolioList, selectedPortfolio, openEditModal, isLoading} = this.state;
     // These are sample headers for the table. We can change this depending on the data we get from the backend
     const headerRow = ['Name', 'Type', 'Description'];
 
@@ -52,12 +54,12 @@ export default class PortfolioList extends Component {
       <NavBar/>
       <Container>
         <Segment className={'portfolio'}>
+          <Header as={'h1'}>Portfolios</Header>
+          <Divider section/>
           {openEditModal ?
             <EditPortfolioModal open={openEditModal} onClose={this.handleClose} selected={selectedPortfolio}/> : null}
-          <Container>
-            <Header as='h2' color={'teal'} textAlign={'center'}>Portfolios</Header>
-            <Divider hidden/>
-            {portfolioList && portfolioList.length > 0 ? <Grid>
+          {isLoading ? null : <Container>
+            {portfolioList && portfolioList.length > 0 ? <Grid textAlign={'center'}>
               <Grid.Row>
                 <Table color={'teal'} selectable>
                   <Table.Header>
@@ -81,12 +83,12 @@ export default class PortfolioList extends Component {
                 <RemovePortfolioModal portfolioList={portfolioList}/>
               </Grid.Row>
             </Grid> : <Container textAlign={'center'}>
-              <Header disabled as='h2'>It seems you don't have any portfolios</Header>
-              <Header disabled as='h2'>Add one below to begin</Header>
-              <br/>
+              <Header disabled as='h2'>It seems you don't have any portfolios
+                <Header.Subheader disabled>Add one below to begin</Header.Subheader>
+              </Header>
               <AddPortfolioModal/>
             </Container>}
-          </Container>
+          </Container>}
         </Segment>
       </Container>
     </React.Fragment>

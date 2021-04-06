@@ -33,7 +33,7 @@ class Stock(models.Model):
     #stocks_owned = models.ForeignKey('User', verbose_name='Stock Owned', on_delete=models.CASCADE)
     buying_price = models.DecimalField(max_digits=10,verbose_name ='Buying Price',decimal_places=2,default=0)
     #balance = models.DecimalField(decimal_places=2)
-    portfolio = models.ForeignKey(Portfolio, verbose_name='Portfolio', on_delete=models.CASCADE)
+    portfolio = models.ForeignKey(Portfolio, verbose_name='Portfolio', blank=True, null=True, on_delete=models.CASCADE)
     #industry = models.CharField(verbose_name ='Belong Industry', max_length=50)
 
     def __str__(self):

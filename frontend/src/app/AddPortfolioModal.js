@@ -31,6 +31,7 @@ export default class AddPortfolioModal extends Component {
         // this.handleClose();
         localStorage.setItem("p_id", data['id']);
         localStorage.setItem("p_name", data['name']);
+        localStorage.setItem("p_type", data['ptype']);
         window.location.reload()
       }).catch(({error}) => {
         alert(error)
@@ -48,7 +49,7 @@ export default class AddPortfolioModal extends Component {
       <Modal.Header>Add new portfolio</Modal.Header>
       <Modal.Content>
         <Form>
-          <Form.Input label={'Portfolio Name'} name={'name'} onChange={this.handleChange}/>
+          <Form.Input label={'Portfolio Name'} placeholder={'max. 10 characters'} name={'name'} onChange={this.handleChange}/>
           <Form.Input label={'Portfolio Description'} name={'desc'} onChange={this.handleChange}/>
           <Form.Group inline>
             <label>Type</label>
