@@ -288,7 +288,7 @@ def add_stock(request, portfolio_pk):
                         serializer.save()
                     return Response(serializer.data, status=HTTP_201_CREATED)
                 return Response(status=HTTP_201_CREATED)
-        return Response({"error": "invalid ticker"}, status=HTTP_400_BAD_REQUEST)
+        return Response({"error": "Not a valid stock"}, status=HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt

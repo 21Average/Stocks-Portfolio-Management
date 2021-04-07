@@ -117,7 +117,7 @@ export default class Settings extends Component {
             </Grid.Column>
             <Grid.Column align={'right'}>
               <Button size='large' icon={'chevron right'} labelPosition={'right'} content={'Logout'} onClick={() => {
-                localStorage.removeItem("token");
+                localStorage.clear();
                 history.push('/login');
               }}/>
             </Grid.Column>

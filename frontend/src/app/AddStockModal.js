@@ -1,7 +1,12 @@
 import React, {Component} from "react";
-import {Button, Form, Modal} from "semantic-ui-react";
+import {Button, Form, Modal, Container} from "semantic-ui-react";
 import axios from "axios";
-import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
+import {AXIOS_HEADER, BACKEND_URL, STOCK_OPTIONS} from "../defaults";
+import VirtualizedSelect from 'react-virtualized-select'
+
+import 'react-select/dist/react-select.css'
+import 'react-virtualized/styles.css'
+import 'react-virtualized-select/styles.css'
 
 export default class AddStockModal extends Component {
   state = {
@@ -45,13 +50,25 @@ export default class AddStockModal extends Component {
       trigger={<Button positive onClick={() => this.setState({openModal: true})}>Add Stock</Button>}>
       <Modal.Header>Add new stock</Modal.Header>
       <Modal.Content>
-        {this.props.pType === 'Transaction' ? <Form>
-          <Form.Input label={'Stock Name'} name={'name'} onChange={this.handleChange}/>
-          <Form.Input label={'Buying price'} placeholder={'round to 2 decimal places'} name={'price'} onChange={this.handleChange}/>
-          <Form.Input label={'Quantity'} name={'quantity'} onChange={this.handleChange}/>
-        </Form> : <Form>
-          <Form.Input label={'Stock Name'} name={'name'} onChange={this.handleChange}/>
-        </Form>}
+        {this.props.pType === 'Transaction' ? <Container>
+            <VirtualizedSelect
+              options={STOCK_OPTIONS}
+              placeholder={'Select stock symbol'}
+              onChange={(selected) => this.setState({name: selected ? selected['value'] : ''})}
+              value={this.state.name}/><br/>
+            <Form>
+              <Form.Group widths={'equal'}>
+                <Form.Input label={'Buying price'} placeholder={'round to 2 decimal places'} name={'price'}
+                            onChange={this.handleChange}/>
+                <Form.Input label={'Quantity'} name={'quantity'} onChange={this.handleChange}/>
+              </Form.Group>
+            </Form>
+          </Container> :
+          <VirtualizedSelect
+            options={STOCK_OPTIONS}
+            placeholder={'Select stock symbol'}
+            onChange={(selected) => this.setState({name: selected ? selected['value'] : ''})}
+            value={this.state.name}/>}
       </Modal.Content>
       <Modal.Actions>
         <Button onClick={this.handleAdd} positive>Add</Button>
