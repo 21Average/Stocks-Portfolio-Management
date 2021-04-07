@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Segment, Header, Table, Container, Divider, Grid, Loader} from "semantic-ui-react";
+import {Segment, Header, Table, Container, Divider, Grid} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import AddPortfolioModal from "./AddPortfolioModal";
 import EditPortfolioModal from "./EditPortfolioModal";

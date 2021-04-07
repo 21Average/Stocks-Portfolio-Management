@@ -135,7 +135,7 @@ export default class Home extends Component {
                 </React.Fragment>}
               </Container> : <Container textAlign={'center'}>
                 <Header disabled as='h2'>It seems you don't have any portfolios
-                  <Header.Subheader disabled as='h2'>Add one below to begin</Header.Subheader>
+                  <Header.Subheader>Add one below to begin</Header.Subheader>
                 </Header>
                 <AddPortfolioModal/>
               </Container>}

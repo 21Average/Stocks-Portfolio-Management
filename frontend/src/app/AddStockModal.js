@@ -31,8 +31,8 @@ export default class AddStockModal extends Component {
         localStorage.setItem("p_name", this.props.pName);
         localStorage.setItem("p_type", this.props.pType);
         window.location.reload();
-      }).catch(() => {
-        alert("Oops! Something went error. Please try again later")
+      }).catch(({response}) => {
+        alert("Oops! " + response.data['error'])
       })
     }
   };
