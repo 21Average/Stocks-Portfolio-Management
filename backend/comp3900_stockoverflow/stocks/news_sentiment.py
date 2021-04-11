@@ -311,24 +311,59 @@ def predict_rating(news, if_print=False):
         print(
             f"result from SVC: positive:{rating_svc[2]:.2f}, neutral:{rating_svc[1]:.2f}, negative:{rating_svc[0]:.2f}")
 
-    if (benchmark_rating < 0.5 and rating_lstm < 0 and rating_NN < 0.5) or benchmark_rating < 0 or rating_NN < 0.2 or (rating_svc[0] > 0.5 and np.argmax(rating_svc) == 0):
-        return "Strong Negative"
-    elif (benchmark_rating >= 0.5 and rating_lstm >= 0 and rating_NN >= 0.5) or (benchmark_rating >= 0.8 or rating_NN >= 0.8) or (rating_svc[2] > 0.5 and np.argmax(rating_svc) == 2):
-        return "Strong Positive"
-    elif benchmark_rating >= 0.5 and rating_lstm >= 0 and rating_svc[-1] > rating_svc[0]:
-        return "Positive"
-    elif benchmark_rating < 0.5 and rating_lstm < 0 or rating_svc[0] > rating_svc[-1]:
-        return "Negative"
-    else:
-        return "Neutral"
+    # if (benchmark_rating < 0.5 and rating_lstm < 0 and rating_NN < 0.5) or benchmark_rating < 0 or rating_NN < 0.2 or (rating_svc[0] > 0.5 and np.argmax(rating_svc) == 0):
+    #     return "Strong Negative"
+    # elif (benchmark_rating >= 0.5 and rating_lstm >= 0 and rating_NN >= 0.5) or (benchmark_rating >= 0.8 or rating_NN >= 0.8) or (rating_svc[2] > 0.5 and np.argmax(rating_svc) == 2):
+    #     return "Strong Positive"
+    # elif benchmark_rating >= 0.5 and rating_lstm >= 0 and rating_svc[-1] > rating_svc[0]:
+    #     return "Positive"
+    # elif benchmark_rating < 0.5 and rating_lstm < 0 or rating_svc[0] > rating_svc[-1]:
+    #     return "Negative"
+    # else:
+    #     return "Neutral"
+    if np.argmax(rating_svc) == 2:
+        # the news is in the positive side
+        if benchmark_rating >= 0.5 and rating_lstm >=0 and rating_NN >= 0.5:
+            return "Strongly Positive", rating_svc[2]
+        elif benchmark_rating >= 0.5 or rating_lstm >=0 or rating_NN >= 0.5:
+            return "Slightly Positive", rating_svc[2]
+        else:
+            return "Positive", rating_svc[2]
 
+    elif np.argmax(rating_svc) == 0:
+        # the news is in the negative side
+        if benchmark_rating <0.5 and rating_lstm <0 and rating_NN < 0.5:
+            return "Strongly Negative", rating_svc[0]* -1
+        elif benchmark_rating <0.5 or rating_lstm <0 or rating_NN < 0.5:
+            return "Slightly Negative", rating_svc[0] * -1
+        else:
+            return "Negative", rating_svc[0] * -1
+
+    else:
+        if benchmark_rating < 0:
+            return "Negative", rating_svc[0] * -1
+        if benchmark_rating > 0.5:
+            return "Positive", rating_svc[2]
+        if rating_svc[1] > 0.7:
+            return "Neutral", rating_svc[1] * 0
+        else:
+            if rating_svc[0] > rating_svc[2]:
+                return "Slightly Negative", rating_svc[0] * -1
+            else:
+                return "Slightly Positive", rating_svc[2]
+
+def predict_news_series(news):
+    result = predict_rating(news['Headline'])
+    news["Sentiment"] = result[0]
+    news["Score"]= result[1]
+    return news
 
 ## referene: https://towardsdatascience.com/stock-news-sentiment-analysis-with-python-193d4b4378d4
 
 
 # In[166]:
 # Import libraries
-def analyse_news_sentiment(tickers, n = 3):
+def analyse_news_sentiment(tickers, n = 1):
 
     # Get Data
     finwiz_url = 'https://finviz.com/quote.ashx?t='
@@ -389,17 +424,17 @@ def analyse_news_sentiment(tickers, n = 3):
 
     columns = ['Ticker', 'Date', 'Time', 'Headline', 'Link', 'Source']
     news = pd.DataFrame(parsed_news, columns=columns)
-    scores = news['Headline'].apply(analyser.polarity_scores).tolist()
 
-    df_scores = pd.DataFrame(scores)
-    news = news.join(df_scores, rsuffix='_right')
+    # scores = news['Headline'].apply(analyser.polarity_scores).tolist()
+    # df_scores = pd.DataFrame(scores)
+    # news = news.join(df_scores, rsuffix='_right')
 
-    sentiments = news['Headline'].apply(predict_rating).tolist()
-    
-    df_sentiments = pd.DataFrame(sentiments)
-    news = news.join(df_sentiments, rsuffix='_right')
-    news.rename(columns={0: 'Sentiment'}, inplace=True)
+    # sentiments = news['Headline'].apply(predict_rating).tolist()
+    # df_sentiments = pd.DataFrame(sentiments)
+    # news = news.join(df_sentiments, rsuffix='_right')
 
+    # news.rename(columns={0: 'Sentiment'}, inplace=True)
+    news = news.apply(predict_news_series, axis = 1)
     # View Data
     news['Date'] = pd.to_datetime(news.Date).dt.date
 

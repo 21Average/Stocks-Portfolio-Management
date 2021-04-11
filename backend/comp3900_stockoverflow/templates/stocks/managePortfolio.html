@@ -56,4 +56,40 @@ Manage Portfolio
         </tbody>
       </table>
     {% endif%}
+    
+    {% if news_sentiment %}
+    <div class="container">
+        <h2 class="text-center"><u>News Sentiment</u></h2><br>
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Ticker</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Headline</th>
+                    <th>Link</th>
+                    <th>Source</th>
+                    <th>Score</th>
+                    <th>Sentiment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- jinja2 Technique -->
+                {% for i in news_sentiment %}
+                <tr>
+                    <td>{{i.Ticker}}</td>
+                    <td>{{i.Date}}</td>
+                    <td>{{i.Time}}</td>
+                    <td>{{i.Headline}}</td>
+                    <td>{{i.Link}}</td>
+                    <td>{{i.Source}}</td>
+                    <td>{{i.Score}}</td>
+                    <td>{{i.Sentiment}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
 {% endblock %}

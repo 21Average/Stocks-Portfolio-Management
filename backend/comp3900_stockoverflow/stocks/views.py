@@ -7,6 +7,10 @@ from .models import Stock, Portfolio
 from .forms import PortfolioCreateForm, PortfolioManageForm,WatchListManageForm
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+import pandas as pd
+
+#news sentiment
+from .news_sentiment import analyse_news_sentiment
 
 def search_stock(url, stock_ticker):
     my_token = settings.IEXCLOUD_TEST_API_TOKEN
@@ -209,19 +213,28 @@ def portfolio_manage_form(request,portfolio_pk):
         stockdata = portfolio.stock_list
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
-
+    
             tickers = ','.join(ticker_list)
             base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
             stockdata = search_stock_batch(base_url, tickers)
+
+            df_news = analyse_news_sentiment(ticker_list)
+            json_records = df_news.reset_index().to_json(orient='records')
+            news_data = []
+            news_data = json.loads(json_records)
+            context = {
+                'stockdata': zip(stockdata, user_stock),
+                'portfolio': portfolio,
+                'news_sentiment': news_data,
+                #'user_stocks':user_stock
+            }
         else:
             messages.info(
                 request, 'Currently, there are no stocks in your portfolio!')
 
-        context = {
-            'stockdata': zip(stockdata,user_stock),
-            'portfolio': portfolio,
-            #'user_stocks':user_stock
-        }
+            context = {
+                'stockdata': zip(stockdata,user_stock),
+                'portfolio': portfolio,
+                #'user_stocks':user_stock
+            }
         return render(request, 'stocks/managePortfolio.html', context)
-
-
