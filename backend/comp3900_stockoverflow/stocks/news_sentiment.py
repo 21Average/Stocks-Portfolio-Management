@@ -6,7 +6,6 @@
 
 from nltk.tokenize import word_tokenize, sent_tokenize
 from urllib.request import urlopen, Request
-import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 from keras.datasets import imdb
 import tensorflow as tf
@@ -23,6 +22,7 @@ import string
 import joblib
 import pickle
 import os
+import re
 # scikilearn.__version__ == 0.22.2
 
 
@@ -240,8 +240,13 @@ def get_simple_pos(tag):
 # Function to clean our text.
 lemmatizer = WordNetLemmatizer()
 
+def cleanText(text):
+    text = BeautifulSoup(text, "lxml").text
+    text = re.sub(r'\|\|\|', r' ', text) 
+    text = re.sub(r'http\S+', r'<URL>', text)
+    text = text.lower()
+    text = text.replace('x', '')
 
-def clean_review(text):
     clean_text = []
     for w in word_tokenize(text):
         if w.lower() not in stop:
@@ -249,7 +254,6 @@ def clean_review(text):
             new_w = lemmatizer.lemmatize(w, pos=get_simple_pos(pos[0][1]))
             clean_text.append(new_w)
     return clean_text
-
 
 def join_text(text):
     return " ".join(text)
@@ -272,7 +276,7 @@ svc_loaded = joblib.load(my_file)
 
 
 def svc_predict(svc, count_vec, news):
-    news_processed = clean_review(news)
+    news_processed = cleanText(news)
     news_processed = join_text(news_processed)
 
     test_news = count_vec.transform([news_processed]).todense()
