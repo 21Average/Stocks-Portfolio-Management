@@ -29,7 +29,7 @@ export default class Register extends Component {
           data: {'first_name': firstName, 'last_name': lastName, 'email': email, 'password': password1}
         }).then(({data}) => {
           localStorage.setItem("token", data.token);
-          history.push('/home')
+          history.push('/dashboard')
         }).catch(() => {
           this.setState({errorMsg: 'Account already exists', showErrorMsg: true});
         });

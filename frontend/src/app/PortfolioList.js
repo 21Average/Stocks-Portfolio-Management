@@ -1,11 +1,12 @@
 import React, {Component} from "react";
-import {Segment, Header, Table, Container, Divider, Grid} from "semantic-ui-react";
+import {Segment, Header, Table, Container, Divider, Grid, Button} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import AddPortfolioModal from "./AddPortfolioModal";
 import EditPortfolioModal from "./EditPortfolioModal";
 import RemovePortfolioModal from "./RemovePortfolioModal";
 import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
+import history from "../history";
 
 export default class PortfolioList extends Component {
   state = {
@@ -54,7 +55,9 @@ export default class PortfolioList extends Component {
       <NavBar/>
       <Container>
         <Segment className={'portfolio'}>
-          <Header as={'h1'}>Portfolios</Header>
+          <Button content={'Back'} icon={'left arrow'} labelPosition={'left'} size={'small'}
+                  onClick={() => history.push('/portfolio')}/>
+          <Header align={'center'} as={'h1'}>Portfolios</Header>
           <Divider section/>
           {openEditModal ?
             <EditPortfolioModal open={openEditModal} onClose={this.handleClose} selected={selectedPortfolio}/> : null}

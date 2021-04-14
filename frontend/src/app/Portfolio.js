@@ -1,13 +1,14 @@
 import React, {Component} from "react";
-import {Segment, Header, Dropdown, Container, Divider, Grid, Loader} from "semantic-ui-react";
+import {Segment, Header, Dropdown, Container, Divider, Grid, Loader, Button, Icon} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import axios from "axios";
+import history from "../history"
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
 import AddPortfolioModal from "./AddPortfolioModal";
 import AddStockModal from "./AddStockModal";
 import PortfolioTable from "./PortfolioTable";
 
-export default class Home extends Component {
+export default class Portfolio extends Component {
   state = {
     pID: '',
     pName: '',
@@ -82,7 +83,7 @@ export default class Home extends Component {
       this.setState({pData: data, portfolioSelected: true, isTableLoading: false});
     }).catch(({response}) => {
       this.setState({showNoStockMsg: true, portfolioSelected: true, isTableLoading: false});
-      console.log(response.data['error']);
+      // console.log(response.data['error']);
     });
   };
 
@@ -95,23 +96,44 @@ export default class Home extends Component {
         <Segment className={'portfolio'}>
           {isLoading ? null : <Container>
             {pOptions && pOptions.length > 0 ? <Container>
-              <Dropdown placeholder='Select a portfolio' fluid selection options={pOptions}
-                        onChange={this.handleChangePortfolio} defaultValue={`${pID}:${pName}:${pType}`}/>
+              <Grid columns={'equal'}>
+                <Grid.Column width={12}>
+                  <Dropdown placeholder='Select a portfolio' fluid selection options={pOptions}
+                            onChange={this.handleChangePortfolio} defaultValue={`${pID}:${pName}:${pType}`}/>
+                </Grid.Column>
+                <Grid.Column align={'right'}>
+                  <Button icon labelPosition={'right'} onClick={() => history.push('/portfolio/all')}><Icon name='right arrow'/>View all portfolios</Button>
+                </Grid.Column>
+              </Grid>
+              <Header as='h1'>{pName}<Header.Subheader>{pType}</Header.Subheader></Header>
               <Divider/>
-              <Header textAlign={'center'} color={'teal'}
-                      as='h1'>{pName}<Header.Subheader>{pType}</Header.Subheader></Header>
-              <Divider hidden/>
               {isTableLoading ? <Loader active inline='centered'/> : <React.Fragment>
                 {portfolioSelected && <React.Fragment>
-                  {pData && pData.length > 0 ? <PortfolioTable pData={pData} pID={pID} pName={pName} pType={pType}/> :
-                    <Grid textAlign={'center'}>
-                      <Grid.Row>
-                        <Header disabled as='h3'>It seems you don't have any stocks. Add one below to begin.</Header>
-                      </Grid.Row>
-                      <Grid.Row>
-                        <AddStockModal pID={pID} pName={pName} pType={pType}/>
-                      </Grid.Row>
-                    </Grid>}
+                  {pData && pData.length > 0 ? <Container>
+                    {pType === 'Transaction' && <Container>
+                      <br/>
+                      <Grid columns={3}>
+                        <Grid.Column>
+                          <Header><Header.Subheader>Portfolio Value: </Header.Subheader>$15,345.23</Header>
+                        </Grid.Column>
+                        <Grid.Column>
+                          <Header color={'green'}><Header.Subheader>Today's Gain/Loss: </Header.Subheader>+86.34 (1.34%)</Header>
+                        </Grid.Column>
+                        <Grid.Column>
+                          <Header color={'green'}><Header.Subheader>Total Gain/Loss: </Header.Subheader>+354.43 (7.35%)</Header>
+                        </Grid.Column>
+                      </Grid>
+                      <br/>
+                    </Container>}
+                    <PortfolioTable pData={pData} pID={pID} pName={pName} pType={pType}/>
+                  </Container> : <Grid textAlign={'center'}>
+                    <Grid.Row>
+                      <Header disabled as='h3'>It seems you don't have any stocks. Add one below to begin.</Header>
+                    </Grid.Row>
+                    <Grid.Row>
+                      <AddStockModal pID={pID} pName={pName} pType={pType}/>
+                    </Grid.Row>
+                  </Grid>}
                 </React.Fragment>} </React.Fragment>} </Container> : <Container textAlign={'center'}>
               <Header disabled as='h2'>It seems you don't have any portfolios
                 <Header.Subheader>Add one below to begin</Header.Subheader>

@@ -312,6 +312,8 @@ def get_stock_data(request, portfolio_pk):
                         "symbol": stock["symbol"],
                         "companyName": stock["companyName"],
                         "latestPrice": stock["latestPrice"],
+                        "previousClose": stock["previousClose"],
+                        "changePercent": stock["changePercent"],
                         "quality": stock_db.quality,
                         "buyingPrice": stock_db.buying_price
                     })
@@ -322,9 +324,10 @@ def get_stock_data(request, portfolio_pk):
                         "symbol": stock["symbol"],
                         "companyName": stock["companyName"],
                         "latestPrice": stock["latestPrice"],
+                        "changePercent": stock["changePercent"],
                         "previousClose": stock["previousClose"],
                         "marketCap": stock["marketCap"],
-                        "ytdChange": round(stock["ytdChange"], 2),
+                        "ytdChange": stock["ytdChange"],
                         "peRatio": stock["peRatio"],
                         "week52High": stock["week52High"],
                         "week52Low": stock["week52Low"]

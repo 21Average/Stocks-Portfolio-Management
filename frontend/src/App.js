@@ -3,8 +3,10 @@ import {Router, Switch, Route, Redirect} from "react-router-dom";
 import './App.css';
 import Login from './app/Login';
 import Register from './app/Register';
-import Home from "./app/Home";
+import Dashboard from "./app/Dashboard";
+import Portfolio from "./app/Portfolio";
 import PortfolioList from "./app/PortfolioList";
+import Stock from "./app/Stock";
 import Recommendations from "./app/Recommendations";
 import News from "./app/News";
 import Settings from "./app/Settings";
@@ -25,14 +27,20 @@ export default class App extends Component {
   render() {
     const routes = [
       {
-        path: '/home', component: Home
+        path: '/dashboard', component: Dashboard
       }, {
-        path: '/portfolios', component: PortfolioList
+        path: '/portfolio/all', component: PortfolioList
       }, {
-        path: '/recommendations', component: Recommendations
+        path: '/portfolio', component: Portfolio
       }, {
-        path: '/news', component: News
-      }, {
+        path: '/stock/:symbol', component: Stock
+      },
+      // {
+      //   path: '/recommendations', component: Recommendations
+      // }, {
+      //   path: '/news', component: News
+      // },
+      {
         path: '/settings', component: Settings
       }, {
         path: '/register', component: Register
@@ -44,11 +52,11 @@ export default class App extends Component {
     return <Router history={history}>
       <div className={"page-content"}>
         <Switch>
-          <PrivateRoute exact path={'/home'} component={Home}/>
+          <PrivateRoute exact path={'/dashboard'} component={Dashboard}/>
           {routes.map(({path, component}, i) =>
             <Route key={i} exact path={path} component={component}/>
           )}
-          <Route exact path={'/'}><Redirect to={'/home'}/></Route>
+          <Route exact path={'/'}><Redirect to={'/dashboard'}/></Route>
         </Switch>
       </div>
     </Router>

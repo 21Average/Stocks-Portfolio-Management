@@ -23,7 +23,7 @@ export default class Login extends Component {
       data: {'email': email, 'password': password}
     }).then(({data}) => {
       localStorage.setItem("token", data['token']);
-      history.push('/home')
+      history.push('/dashboard')
     }).catch(() => {
       this.setState({showErrorMsg: true});
     });

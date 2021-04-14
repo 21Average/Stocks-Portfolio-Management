@@ -7,10 +7,10 @@ export default class NavBar extends Component {
 
   render() {
     const items = [
-      {name: 'Home', to: '/home'},
-      {name: 'Portfolios', to: '/portfolios'},
-      {name: 'Recommendations', to: '/recommendations'},
-      {name: 'News', to: '/news'},
+      {name: 'Dashboard', to: '/dashboard'},
+      {name: 'Portfolio', to: '/portfolio'},
+      // {name: 'Recommendations', to: '/recommendations'},
+      // {name: 'News', to: '/news'},
       {name: 'Settings', to: '/settings'},
     ];
 
