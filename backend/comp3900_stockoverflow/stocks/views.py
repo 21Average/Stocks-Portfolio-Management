@@ -188,7 +188,7 @@ def portfolio_manage_form(request,portfolio_pk):
 
     
     else:
-        user_stock = list(Stock.objects.filter(portfoilo=portfolio_pk))
+        userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
         stockdata = portfolio.stock_list
 
         if portfolio.stock_list:
@@ -202,7 +202,16 @@ def portfolio_manage_form(request,portfolio_pk):
                 request, 'Currently, there are no stocks in your portfolio!')
 
         context = {
-            'stockdata': zip(stockdata,user_stock),
+            'stockdata': zip(stockdata,userStock),
             'portfolio': portfolio,
         }
         return render(request, 'stocks/managePortfolio.html', context)
+
+def stock_info(request,userStock_pk):
+
+    ticker = Stock.objects.get(pk=userStock_pk)
+
+    context = {
+        'stock': ticker,
+    }
+    return render(request, 'stocks/stockInfo.html',context)
