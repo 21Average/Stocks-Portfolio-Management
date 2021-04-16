@@ -10,4 +10,6 @@ urlpatterns = [
     #path('deletestock/<stock_symbol>', delete_stock, name='delete_stock'),
     path(r'^(?P<portfolio_pk>[\w_]+)/manageWatchList/$', watchList_manage_form, name='manageWatchList'),
     path(r'^(?P<portfolio_pk>[\w_]+)/managePortfolio/$', portfolio_manage_form, name='managePortfolio'),
+    #path(r'^(?P<stock_ticker>[\w_]+)/$', stock_info, name='stockinfo'),
+    
 ]
