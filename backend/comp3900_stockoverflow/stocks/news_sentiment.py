@@ -62,13 +62,11 @@ new_words = {
 
 analyser = SentimentIntensityAnalyzer()
 # Example
-score = analyser.polarity_scores(
-    "Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.")
+#score = analyser.polarity_scores("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.")
 #print(score)
 analyser.lexicon.update(new_words)
 # Example
-score = analyser.polarity_scores(
-    "Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.")
+#score = analyser.polarity_scores("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.")
 #print(score)
 
 
@@ -112,8 +110,8 @@ lstm_loaded.summary()
 # In[7]:
 
 
-new_prediction = sample_predict("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.",
-                                encoder=encoder_loaded, pad=False, model=lstm_loaded)
+#new_prediction = sample_predict("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.",
+#                                encoder=encoder_loaded, pad=False, model=lstm_loaded)
 #print(new_prediction)
 
 
@@ -179,9 +177,9 @@ def clean_words(news, dimension=TOP_WORDS):
 
 # ## Example
 # In[11]:
-example_1 = "The movie was not good. The animation and the graphics were terrible. I would not recommend this movie."
-example_2 = "it is so good"
-example_3 = "Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow."
+#example_1 = "The movie was not good. The animation and the graphics were terrible. I would not recommend this movie."
+#example_2 = "it is so good"
+#example_3 = "Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow."
 
 
 def predict_sentiment(x_test, NN):
@@ -203,7 +201,7 @@ NN_loaded = tf.keras.models.load_model(my_file)
 # Check its architecture
 NN_loaded.summary()
 
-predict_sentiment("it is good and let's have a try", NN_loaded)
+#predict_sentiment("it is good and let's have a try", NN_loaded)
 
 
 # # SVC trained on another dataset
@@ -325,28 +323,29 @@ def predict_rating(news, if_print=False):
     #     return "Negative"
     # else:
     #     return "Neutral"
+    
     if np.argmax(rating_svc) == 2:
         # the news is in the positive side
-        if benchmark_rating >= 0.5 and rating_lstm >=0 and rating_NN >= 0.5:
+        if benchmark_rating >= 0.05 and rating_lstm >=0 and rating_NN >= 0.5:
             return "Strongly Positive", rating_svc[2]
-        elif benchmark_rating >= 0.5 or rating_lstm >=0 or rating_NN >= 0.5:
+        elif benchmark_rating >= 0.05 or rating_lstm >=0 or rating_NN >= 0.5:
             return "Slightly Positive", rating_svc[2]
         else:
             return "Positive", rating_svc[2]
 
     elif np.argmax(rating_svc) == 0:
         # the news is in the negative side
-        if benchmark_rating <0.5 and rating_lstm <0 and rating_NN < 0.5:
+        if benchmark_rating <-0.05 and rating_lstm <0 and rating_NN < 0.5:
             return "Strongly Negative", rating_svc[0]* -1
-        elif benchmark_rating <0.5 or rating_lstm <0 or rating_NN < 0.5:
+        elif benchmark_rating <-0.05 or rating_lstm <0 or rating_NN < 0.5:
             return "Slightly Negative", rating_svc[0] * -1
         else:
             return "Negative", rating_svc[0] * -1
 
     else:
-        if benchmark_rating < 0:
+        if benchmark_rating < -0.05:
             return "Negative", rating_svc[0] * -1
-        if benchmark_rating > 0.5:
+        if benchmark_rating > 0.05:
             return "Positive", rating_svc[2]
         if rating_svc[1] > 0.7:
             return "Neutral", rating_svc[1] * 0
