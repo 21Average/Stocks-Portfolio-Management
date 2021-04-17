@@ -11,7 +11,7 @@ from .price_prediction import prediction
 import pandas as pd
 
 #news sentiment
-from .news_sentiment import analyse_news_sentiment
+from .news_sentiment import analyse_news_sentiment, predict_rating
 
 def search_stock(url, stock_ticker):
     my_token = settings.IEXCLOUD_TEST_API_TOKEN
