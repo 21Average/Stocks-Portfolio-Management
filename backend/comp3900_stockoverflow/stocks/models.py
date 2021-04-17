@@ -41,7 +41,7 @@ class Portfolio(models.Model):
     name = models.CharField(verbose_name ='Portfoilo Name', max_length=10)
     desc = models.CharField(verbose_name ='Description', max_length=200)
     stock_list = ArrayField(models.CharField(max_length=200), default = list)
-    
+            
     def __str__(self):
          return "{}:{}".format(self.belong_user.email,self.name)
 

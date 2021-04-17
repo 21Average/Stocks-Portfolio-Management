@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 
+{% block head %}
+<script type="text/javascript" src="{% static 'stocks/popup.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'stocks/popup.css' %}">
+{% endblock %}
 {% block title %}
 Manage Portfolio
 {% endblock %}
@@ -36,25 +41,43 @@ Manage Portfolio
         <thead class="thead-dark">
           <tr>
             <th scope="col">Symbol</th>
-            <th scope="col">Company</th>
-            <th scope="col">Lastest Price</th>
             <th scope="col">Buying Price</th>
             <th scope="col">Quality</th>
             <!--th scope="col">Profits</th-->
+            <th scope="col">Buy</th>
             <th scope="col">Delete Stock</th>
           </tr>
         </thead>
         <tbody>
-            {% for stock,userStock in stockdata %}             
-                <td><a href="{% url 'stocks:stockInfo' userStock.pk %}">{{stock.symbol}}</a></td>
-                <td>{{stock.companyName}}</td>
-                <td>${{stock.latestPrice |floatformat:-2 }}</td>
+            {% for userStock in stockdata %}     
+                <td>
+                <a href="{% url 'stocks:stockInfo' userStock.pk %}">{{userStock.ticker}}</a>
+                </td>
+              
                 <td>${{userStock.buying_price}}</td>
-                <td>${{userStock.quality}}</td>      
+                <td>{{userStock.quality}}</td>
+ 
+                <td>
+                    <!-- Trigger -->
+                    <button id = "buy_btn" type="button" class="btn btn-outline-danger btn-sm" onclick="popup()">Buy</button>
+                    <!-- popup -->
+                    <div id="buy_form" class="popup_form">
+                        <div class="popup_content">
+                            <span class="close">&times;</span>
+                            <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
+                                {% csrf_token %}
+                                <input class="form-control mr-sm-2" type="add" placeholder="Buying Price" aria-label="Add" name="buying_price">
+                                <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
+                                <input name=buy_stock class="btn btn-outline-danger btn-sm" type="submit" value="Buy Stock">
+                            </form> 
+                        </div>
+                    </div>
+                </td>   
                 <td>
                     <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
                         {% csrf_token %}
-                        <input type="hidden" name="stock_symbol" value={{stock.symbol}} />
+                        <input type="hidden" name="stock_symbol" value={{userStock.ticker}}>
+                        <input type="hidden" name="stock_id" value={{userStock.pk}}>
                         <input name=remove_stock class="btn btn-outline-danger btn-sm" type="submit" value="x">
                         
                     </form> 
@@ -66,3 +89,4 @@ Manage Portfolio
       </table>
     {% endif%}
 {% endblock %}
+

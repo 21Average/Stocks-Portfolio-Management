@@ -59,6 +59,7 @@ Manage Watch List
                     <form method="POST" action="{% url 'stocks:manageWatchList' portfolio.pk %}" class="form-inline my-2 my-lg-0">
                         {% csrf_token %}
                         <input type="hidden" name="stock_symbol" value={{ stock.symbol }} />
+                        <input type="hidden" name="stock_id" value={{userStock.pk}}>
                         <input name=remove_stock class="btn btn-outline-danger btn-sm" type="submit" value="x">
                         
                     </form> 
