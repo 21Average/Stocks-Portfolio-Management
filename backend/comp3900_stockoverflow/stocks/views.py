@@ -7,13 +7,16 @@ from .models import Stock, Portfolio
 from .forms import PortfolioCreateForm, PortfolioManageForm,WatchListManageForm
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.views.decorators.csrf import csrf_exempt
 from .serializers import PortfolioSerializer, StockSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from datetime import datetime, timezone, time
+from .price_prediction import prediction
+import pandas as pd
+#news sentiment
+from .news_sentiment import analyse_news_sentiment, predict_rating
 
 
 def search_stock(url, stock_ticker):
@@ -211,27 +214,41 @@ def portfolio_manage_form(request,portfolio_pk):
 
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
-
+    
             tickers = ','.join(ticker_list)
             base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
             stockdata = search_stock_batch(base_url, tickers)
+
+            df_news = analyse_news_sentiment(ticker_list)
+            json_records = df_news.reset_index().to_json(orient='records')
+            news_data = []
+            news_data = json.loads(json_records)
+            context = {
+                'stockdata': zip(stockdata, userStock),
+                'portfolio': portfolio,
+                'news_sentiment': news_data,
+                #'user_stocks':user_stock
+            }
         else:
             messages.info(
                 request, 'Currently, there are no stocks in your portfolio!')
 
-        context = {
-            'stockdata': zip(stockdata,userStock),
-            'portfolio': portfolio,
-        }
+            context = {
+                'stockdata': zip(stockdata,userStock),
+                'portfolio': portfolio,
+                #'user_stocks':user_stock
+            }
         return render(request, 'stocks/managePortfolio.html', context)
 
 
 def stock_info(request, userStock_pk):
     ticker = Stock.objects.get(pk=userStock_pk)
     stockdata = history_data(ticker)
+    predicted_price = prediction(history_data(ticker,'1y'))
     context = {
         'stock': ticker,
-        "stockdata": stockdata
+        "stockdata": stockdata,
+        "predicted_price": predicted_price
     }
     return render(request, 'stocks/stockInfo.html', context)
 
@@ -283,7 +300,6 @@ def delete_portfolios(request):
     return Response({"error": "Could not delete profile"}, status=HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_portfolio_list(request):
