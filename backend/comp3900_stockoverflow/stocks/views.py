@@ -223,7 +223,7 @@ def portfolio_manage_form(request,portfolio_pk):
                         form.save()
                         messages.success(
                         request, f'{ticker} has been added successfully.')
-                        return HttpResponseRedirect("") 
+            return HttpResponseRedirect("") 
 
         elif 'sell_stock' in request.POST:
             ticker = str(request.POST.get('ticker'))
