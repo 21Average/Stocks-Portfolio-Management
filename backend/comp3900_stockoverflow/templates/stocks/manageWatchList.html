@@ -13,7 +13,7 @@ Manage Watch List
     <form method="POST" action="{% url 'stocks:manageWatchList' portfolio.pk %}" class="form-inline my-2 my-lg-0">
         {% csrf_token %}
         <input class="form-control mr-sm-2" type="add" placeholder="Stock Ticker or Name" aria-label="Add" name="ticker">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Add Stock</button>
+        <input name=add_stock class="btn btn-outline-danger btn-sm" type="submit" value="Add Stock">
     </form>
     <br>
     {% block messages %}
@@ -55,6 +55,14 @@ Manage Watch List
                 <td>{{stock.peRatio}}</td>
                 <td>${{stock.week52High}}</td>
                 <td>${{stock.week52Low}}</td>
+                <td>
+                    <form method="POST" action="{% url 'stocks:manageWatchList' portfolio.pk %}" class="form-inline my-2 my-lg-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="stock_symbol" value={{ stock.symbol }} />
+                        <input name=remove_stock class="btn btn-outline-danger btn-sm" type="submit" value="x">
+                        
+                    </form> 
+                </td>
                
             </tr>
             {% endfor %}

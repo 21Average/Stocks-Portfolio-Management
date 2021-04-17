@@ -16,6 +16,13 @@ class Stock(models.Model):
     portfoilo = models.ForeignKey("Portfolio", verbose_name= 'Portfolio' ,on_delete=models.CASCADE)
     #industry = models.CharField(verbose_name ='Belong Industry', max_length=50)
 
+    # @staticmethod
+    # def profit(buy_price, current_price, quality):
+    #     diff = buy_price - current_price
+    #     profit = diff * quality
+
+    #     return profit
+
     def __str__(self):
         return self.ticker
 

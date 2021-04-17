@@ -77,8 +77,8 @@ def watchList_manage_form(request, portfolio_pk):
 
     portfolio = Portfolio.objects.get(pk=portfolio_pk)
     if request.method == 'POST':
-        ticker = request.POST['ticker']
-        if ticker:
+        if 'add_stock' in request.POST:
+            ticker = request.POST['ticker']
             form = WatchListManageForm(request.POST or None)
 
             if form.is_valid():
@@ -101,23 +101,15 @@ def watchList_manage_form(request, portfolio_pk):
                         request, f'{ticker} has been added successfully.')
                     return HttpResponseRedirect("") 
 
+        elif 'remove_stock' in request.POST: 
+            ticker = str(request.POST.get('stock_symbol')).lower()
+            portfolio.stock_list.remove(ticker)
+            portfolio.save()
+            return HttpResponseRedirect("") 
         messages.warning(request, 'Please enter a valid ticker name.')
         return HttpResponseRedirect("") 
-    
-    else:
-        '''
-        stockdata = portfolio.stock_list
-        if stockdata:
-            ticker_list = [stock.ticker for stock in stockdata]
-            ticker_list = list(set(ticker_list))
 
-            tickers = ','.join(ticker_list)
-            base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
-            stockdata = search_stock_batch(base_url, tickers)
-        else:
-            messages.info(
-                request, 'Currently, there are no stocks in your portfolio!')
-        '''
+    else:
         stockdata = portfolio.stock_list
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
@@ -129,28 +121,11 @@ def watchList_manage_form(request, portfolio_pk):
             messages.info(
                 request, 'Currently, there are no stocks in your portfolio!')
 
-        
-            
-
         context = {
             'stockdata': stockdata,
             'portfolio': portfolio
         }
         return render(request, 'stocks/manageWatchList.html', context)
-        #return redirect("",context)
-    
-    # context = {
-    #     'portfolio': portfolio
-    # }
-    # return render(request, 'stocks/manageWatchList.html', context)
-
-
-# def delete_stock(request, stock_symbol):
-#     stock = Stock.objects.get(ticker=stock_symbol)
-#     stock.delete()
-
-#     messages.success(request, f'{stock.ticker} has been deleted successfully.')
-#     return redirect('manageWatchList')
 
 def portfolio_create_form(request):
 
@@ -178,11 +153,11 @@ def portfolio_create_form(request):
 def portfolio_manage_form(request,portfolio_pk):
     portfolio = Portfolio.objects.get(pk=portfolio_pk)
     if request.method == 'POST':
-        ticker = request.POST['ticker']
-        quality = request.POST['quality']
-        buying_price = request.POST['buying_price']
 
-        if ticker:
+        if 'add_stock' in request.POST:
+            ticker = request.POST['ticker']
+            quality = request.POST['quality']
+            buying_price = request.POST['buying_price']
             form = PortfolioManageForm(request.POST or None)
 
             if form.is_valid():
@@ -205,12 +180,21 @@ def portfolio_manage_form(request,portfolio_pk):
                         request, f'{ticker} has been added successfully.')
                     return HttpResponseRedirect("") 
 
-        messages.warning(request, 'Please enter a valid ticker name.')
-        return HttpResponseRedirect("") 
+        elif 'remove_stock' in request.POST: 
+            ticker = str(request.POST.get('stock_symbol')).lower()
+            portfolio.stock_list.remove(ticker)
+            portfolio.save()
+            return HttpResponseRedirect("") 
+
+        else:
+            messages.warning(request, 'Please enter a valid ticker name.')
+            return HttpResponseRedirect("") 
+
     
     else:
-        user_stock = list(Stock.objects.filter(portfoilo=portfolio_pk))
+        userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
         stockdata = portfolio.stock_list
+
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
     
@@ -223,7 +207,7 @@ def portfolio_manage_form(request,portfolio_pk):
             news_data = []
             news_data = json.loads(json_records)
             context = {
-                'stockdata': zip(stockdata, user_stock),
+                'stockdata': zip(stockdata, userStock),
                 'portfolio': portfolio,
                 'news_sentiment': news_data,
                 #'user_stocks':user_stock
@@ -233,8 +217,17 @@ def portfolio_manage_form(request,portfolio_pk):
                 request, 'Currently, there are no stocks in your portfolio!')
 
             context = {
-                'stockdata': zip(stockdata,user_stock),
+                'stockdata': zip(stockdata,userStock),
                 'portfolio': portfolio,
                 #'user_stocks':user_stock
             }
         return render(request, 'stocks/managePortfolio.html', context)
+
+def stock_info(request,userStock_pk):
+
+    ticker = Stock.objects.get(pk=userStock_pk)
+
+    context = {
+        'stock': ticker,
+    }
+    return render(request, 'stocks/stockInfo.html',context)
