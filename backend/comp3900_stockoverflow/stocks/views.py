@@ -7,6 +7,7 @@ from .models import Stock, Portfolio
 from .forms import PortfolioCreateForm, PortfolioManageForm,WatchListManageForm
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from .price_prediction import prediction
 
 def search_stock(url, stock_ticker):
     my_token = settings.IEXCLOUD_TEST_API_TOKEN
@@ -214,9 +215,11 @@ def stock_info(request,userStock_pk):
 
     ticker = Stock.objects.get(pk=userStock_pk)
     stockdata = history_data(ticker)
+    predicted_price = prediction(history_data(ticker,'1y'))
     context = {
         'stock': ticker,
-        "stockdata": stockdata
+        "stockdata": stockdata,
+        "predicted_price": predicted_price
     }
     return render(request, 'stocks/stockInfo.html',context)
 
