@@ -15,8 +15,10 @@ Manage Portfolio
         <input class="form-control mr-sm-2" type="add" placeholder="Stock Ticker or Name" aria-label="Add" name="ticker">
         <input class="form-control mr-sm-2" type="add" placeholder="Buying Price" aria-label="Add" name="buying_price">
         <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Add Stock</button>
+        <input name=add_stock class="btn btn-outline-danger btn-sm" type="submit" value="Add Stock">
+        
     </form>
+
     <br>
     {% block messages %}
     {% if messages %}
@@ -38,18 +40,25 @@ Manage Portfolio
             <th scope="col">Lastest Price</th>
             <th scope="col">Buying Price</th>
             <th scope="col">Quality</th>
+            <!--th scope="col">Profits</th-->
             <th scope="col">Delete Stock</th>
           </tr>
         </thead>
         <tbody>
-            {% for stock,user_stock in stockdata %}
-            <tr>
-                <td>{{stock.symbol}}</td>
+            {% for stock,userStock in stockdata %}             
+                <td><a href="{% url 'stocks:stockInfo' userStock.pk %}">{{stock.symbol}}</a></td>
                 <td>{{stock.companyName}}</td>
                 <td>${{stock.latestPrice |floatformat:-2 }}</td>
-                 <td>${{user_stock.buying_price}}</td>
-                <td>${{user_stock.quality}}</td>
-              
+                <td>${{userStock.buying_price}}</td>
+                <td>${{userStock.quality}}</td>      
+                <td>
+                    <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="stock_symbol" value={{stock.symbol}} />
+                        <input name=remove_stock class="btn btn-outline-danger btn-sm" type="submit" value="x">
+                        
+                    </form> 
+                </td>
             </tr>
             {% endfor %}
 

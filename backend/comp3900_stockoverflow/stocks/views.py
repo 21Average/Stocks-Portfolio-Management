@@ -42,10 +42,9 @@ def search_stock_batch(base_url, stock_tickers):
             for item in data:
                 data_list.append(data[item]['quote'])
         else:
-            data = {'Error': 'There has been an unexpected issues. Please try again'}
+            return {'Error': 'There has been an unexpected issues. Please try again'}
     except Exception as e:
-        data = {
-            'Error': 'There has been some connection error. Please try again later.'}
+        return {'Error': 'There has been some connection error. Please try again later.'}
     return data_list
 
 
@@ -67,6 +66,7 @@ def check_stock_ticker_existed(stock_ticker,portfolio):
     except Exception:
         return False
 
+
 def home(request):
     if request.method == 'POST':
         stock_ticker = request.POST['stock_ticker']
@@ -80,8 +80,8 @@ def watchList_manage_form(request, portfolio_pk):
 
     portfolio = Portfolio.objects.get(pk=portfolio_pk)
     if request.method == 'POST':
-        ticker = request.POST['ticker']
-        if ticker:
+        if 'add_stock' in request.POST:
+            ticker = request.POST['ticker']
             form = WatchListManageForm(request.POST or None)
 
             if form.is_valid():
@@ -104,24 +104,18 @@ def watchList_manage_form(request, portfolio_pk):
                         request, f'{ticker} has been added successfully.')
                     return HttpResponseRedirect("") 
 
+        elif 'remove_stock' in request.POST: 
+            ticker = str(request.POST.get('stock_symbol')).lower()
+            portfolio.stock_list.remove(ticker)
+            portfolio.save()
+            return HttpResponseRedirect("") 
         messages.warning(request, 'Please enter a valid ticker name.')
         return HttpResponseRedirect("") 
-    
-    else:
-        '''
-        stockdata = portfolio.stock_list
-        if stockdata:
-            ticker_list = [stock.ticker for stock in stockdata]
-            ticker_list = list(set(ticker_list))
 
-            tickers = ','.join(ticker_list)
-            base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
-            stockdata = search_stock_batch(base_url, tickers)
-        else:
-            messages.info(
-                request, 'Currently, there are no stocks in your portfolio!')
-        '''
+    else:
+        userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
         stockdata = portfolio.stock_list
+
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
 
@@ -132,60 +126,45 @@ def watchList_manage_form(request, portfolio_pk):
             messages.info(
                 request, 'Currently, there are no stocks in your portfolio!')
 
-        
-            
-
         context = {
-            'stockdata': stockdata,
-            'portfolio': portfolio
+            'stockdata': zip(stockdata,userStock),
+            'portfolio': portfolio,
         }
         return render(request, 'stocks/manageWatchList.html', context)
-        #return redirect("",context)
-    
-    # context = {
-    #     'portfolio': portfolio
-    # }
-    # return render(request, 'stocks/manageWatchList.html', context)
 
 
-# def delete_stock(request, stock_symbol):
-#     stock = Stock.objects.get(ticker=stock_symbol)
-#     stock.delete()
+# DJANGO FORMS - CREATE/MANAGE PORTFOLIO
+def portfolio_create_form(request):
 
-#     messages.success(request, f'{stock.ticker} has been deleted successfully.')
-#     return redirect('manageWatchList')
+    portfolio_list = Portfolio.objects.all()
+    form = PortfolioCreateForm()
+    if request.method == "POST":
+        form = PortfolioCreateForm(request.POST or None)
+        if form.is_valid():
+            form = form.save(commit=False)
+            #form.stock_list = [99]
+            form.save()
+            if form.ptype == "WatchList":
+                return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
+            elif form.ptype == "Portfolio":
+                return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
 
-# def portfolio_create_form(request):
-#
-#     portfolio_list = Portfolio.objects.all()
-#     form = PortfolioCreateForm()
-#     if request.method == "POST":
-#         form = PortfolioCreateForm(request.POST or None)
-#         if form.is_valid():
-#             form = form.save(commit=False)
-#             #form.stock_list = [99]
-#             form.save()
-#             if form.ptype == "WatchList":
-#                 return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
-#             elif form.ptype == "Portfolio":
-#                 return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
-#
-#
-#     context = {
-#         'portfolio_list': portfolio_list,
-#         'form':form
-#     }
-#     return render(request, 'stocks/createPortfolio.html',context)
+
+    context = {
+        'portfolio_list': portfolio_list,
+        'form':form
+    }
+    return render(request, 'stocks/createPortfolio.html',context)
 
 
 def portfolio_manage_form(request,portfolio_pk):
     portfolio = Portfolio.objects.get(pk=portfolio_pk)
     if request.method == 'POST':
-        ticker = request.POST['ticker']
-        quality = request.POST['quality']
-        buying_price = request.POST['buying_price']
 
-        if ticker:
+        if 'add_stock' in request.POST:
+            ticker = request.POST['ticker']
+            quality = request.POST['quality']
+            buying_price = request.POST['buying_price']
             form = PortfolioManageForm(request.POST or None)
 
             if form.is_valid():
@@ -208,12 +187,21 @@ def portfolio_manage_form(request,portfolio_pk):
                         request, f'{ticker} has been added successfully.')
                     return HttpResponseRedirect("") 
 
-        messages.warning(request, 'Please enter a valid ticker name.')
-        return HttpResponseRedirect("") 
+        elif 'remove_stock' in request.POST: 
+            ticker = str(request.POST.get('stock_symbol')).lower()
+            portfolio.stock_list.remove(ticker)
+            portfolio.save()
+            return HttpResponseRedirect("") 
+
+        else:
+            messages.warning(request, 'Please enter a valid ticker name.')
+            return HttpResponseRedirect("") 
+
     
     else:
-        user_stock = list(Stock.objects.filter(portfoilo=portfolio_pk))
+        userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
         stockdata = portfolio.stock_list
+
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
 
@@ -225,12 +213,39 @@ def portfolio_manage_form(request,portfolio_pk):
                 request, 'Currently, there are no stocks in your portfolio!')
 
         context = {
-            'stockdata': zip(stockdata,user_stock),
+            'stockdata': zip(stockdata,userStock),
             'portfolio': portfolio,
-            #'user_stocks':user_stock
         }
         return render(request, 'stocks/managePortfolio.html', context)
 
+
+def stock_info(request,userStock_pk):
+
+    ticker = Stock.objects.get(pk=userStock_pk)
+    stockdata = history_data(ticker)
+    context = {
+        'stock': ticker,
+        "stockdata": stockdata
+    }
+    return render(request, 'stocks/stockInfo.html',context)
+
+
+def history_data(ticker, range='1d'):
+    if range not in ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y']:
+        return False
+    else:
+        my_token = settings.IEXCLOUD_TEST_API_TOKEN
+        base_url = "https://sandbox.iexapis.com/stable/stock/"
+        url = base_url + str(ticker) + "/chart/" + range + "?token=" + my_token
+        data = requests.get(url)
+
+        if data.status_code == 200:
+            data = json.loads(data.content)
+        else:
+            data = {
+                'Error': 'There was a problem with your provided ticker symbol. Please try again'}
+
+        return data
 
 # IMPLEMENTATION FOR FRONT-END
 @csrf_exempt
