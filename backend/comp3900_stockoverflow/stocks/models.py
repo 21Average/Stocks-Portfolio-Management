@@ -8,7 +8,7 @@ class Stock(models.Model):
     ticker = models.CharField(verbose_name ='Ticker', max_length=10)
     quality = models.IntegerField(verbose_name = 'Quality',default=0)
     #name = models.CharField(verbose_name ='Stock Name', max_length=10)
-    #price = models.DecimalField(max_digits=10,verbose_name ='Price', decimal_places=2, default=0.00)
+    profit = models.DecimalField(max_digits=10,verbose_name ='Profit', decimal_places=2, default=0.00)
     #change = models.DecimalField(max_digits=10,verbose_name ='Change',decimal_places=2)
     #stocks_owned = models.ForeignKey('User', verbose_name='Stock Owned', on_delete=models.CASCADE)
     buying_price = models.DecimalField(max_digits=10,verbose_name ='Buying Price',decimal_places=2,default=0)
@@ -16,6 +16,9 @@ class Stock(models.Model):
     portfoilo = models.ForeignKey("Portfolio", verbose_name= 'Portfolio' ,on_delete=models.CASCADE)
     #industry = models.CharField(verbose_name ='Belong Industry', max_length=50)
 
+    def save(self, *args, **kwargs):
+        self.ticker = self.ticker.upper()
+        return super(Stock, self).save(*args, **kwargs)
     # @staticmethod
     # def profit(buy_price, current_price, quality):
     #     diff = buy_price - current_price

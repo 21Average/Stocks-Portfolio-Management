@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'comp3900_stockoverflow.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'comp3900_1',
+        'NAME': 'comp3900_2',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',

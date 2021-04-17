@@ -1,3 +1,4 @@
+
 .popup_form {
 	display: none; /* Hidden by default */
 	position: fixed; /* Stay in place */
@@ -19,4 +20,11 @@
 	padding: 20px;
 	border: 1px solid #888;
 	width: 80%;
-  }
+}
+
+.modal-body{
+    display:none;
+    position:absolute;
+    top:0;
+    left:0px;
+}
