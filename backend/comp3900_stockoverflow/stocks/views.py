@@ -136,16 +136,21 @@ def portfolio_create_form(request):
     portfolio_list = Portfolio.objects.all()
     form = PortfolioCreateForm()
     if request.method == "POST":
-        form = PortfolioCreateForm(request.POST or None)
-        if form.is_valid():
-            form = form.save(commit=False)
-            #form.stock_list = [99]
-            form.save()
-            if form.ptype == "WatchList":
-                return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
-            elif form.ptype == "Portfolio":
-                return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
+        if 'add_portfolio' in request.POST:
+            form = PortfolioCreateForm(request.POST or None)
+            if form.is_valid():
+                form = form.save(commit=False)
+                
+                form.save()
+                if form.ptype == "WatchList":
+                    return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
+                elif form.ptype == "Portfolio":
+                    return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
 
+        elif 'remove_portfolio' in request.POST: 
+            portfolio_pk= request.POST.get('portfolio_pk')
+            Portfolio.objects.filter(id=portfolio_pk).delete()
+            return HttpResponseRedirect("")
 
     context = {
         'portfolio_list': portfolio_list,
@@ -272,3 +277,4 @@ def stock_info(request,userStock_pk):
         'stock': ticker,
     }
     return render(request, 'stocks/stockInfo.html',context)
+
