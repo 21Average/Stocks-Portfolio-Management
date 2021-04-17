@@ -25,6 +25,7 @@ export default class PortfolioList extends Component {
         headers: AXIOS_HEADER(token),
         method: 'get', url: `${BACKEND_URL}/stocks/getPortfolios/`
       }).then(({data}) => {
+        data.forEach((o) => o['value'] = "$14590.20");
         this.setState({portfolioList: data, isLoading: false})
       }).catch(({error}) => {
         alert(error)
@@ -49,7 +50,7 @@ export default class PortfolioList extends Component {
   render() {
     const {portfolioList, selectedPortfolio, openEditModal, isLoading} = this.state;
     // These are sample headers for the table. We can change this depending on the data we get from the backend
-    const headerRow = ['Name', 'Type', 'Description'];
+    const headerRow = ['Name', 'Type', 'Description', 'Total Value'];
 
     return <React.Fragment>
       <NavBar/>
@@ -64,7 +65,7 @@ export default class PortfolioList extends Component {
           {isLoading ? null : <Container>
             {portfolioList && portfolioList.length > 0 ? <Grid textAlign={'center'}>
               <Grid.Row>
-                <Table color={'teal'} selectable>
+                <Table color={'teal'}>
                   <Table.Header>
                     <Table.Row>
                       {headerRow.map((header, i) =>
@@ -72,11 +73,12 @@ export default class PortfolioList extends Component {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {portfolioList.map(({name, ptype, desc}, i) =>
+                    {portfolioList.map(({name, ptype, desc, value}, i) =>
                       <Table.Row key={i} onClick={() => this.handleEditPortfolio(i)}>
                         <Table.Cell>{name}</Table.Cell>
                         <Table.Cell>{ptype}</Table.Cell>
                         <Table.Cell>{desc}</Table.Cell>
+                        <Table.Cell><p style={{color: 'green'}}>{value}</p></Table.Cell>
                       </Table.Row>)}
                   </Table.Body>
                 </Table>

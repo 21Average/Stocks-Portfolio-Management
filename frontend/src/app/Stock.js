@@ -1,7 +1,10 @@
 import React, {Component} from "react";
-import {Segment, Container, Header, Divider, Button, Menu, Grid, Table} from "semantic-ui-react";
+import {Segment, Container, Header, Divider, Button, Menu, Grid, Table, Loader} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import history from "../history";
+import axios from "axios";
+import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
+import PerformanceChart from "./PerformanceChart";
 
 
 export default class Stock extends Component {
@@ -9,32 +12,64 @@ export default class Stock extends Component {
     symbol: '',
     name: '',
     pType: '',
-    activeItem: 'price prediction', // need a better name?
-    lastUpdated: ''
+    activeItem: 'performance', // need a better name?
+    lastUpdated: '',
+    stockHistory: {},
+    rangeSelected: '6m'
   };
 
   componentDidMount() {
     const {symbol} = this.props.match.params;
     const pType = this.props.location.state.pType;
+    const {rangeSelected} = this.state;
     // TODO: change this to an API call to the backend. Use symbol to get stock's details
     const name = this.props.location.state.name;
     let date = new Date();
+    const token = localStorage.getItem("token");
+    if (token) {
+      axios({
+        headers: AXIOS_HEADER(token),
+        method: 'post', url: `${BACKEND_URL}/stocks/getStockHistory/`,
+        data: {'ticker': symbol, 'range': rangeSelected}
+      }).then(({data}) => {
+        this.setState({stockHistory: data})
+      }).catch(({response}) => {
+        alert("Oops! " + response.data['error'])
+      });
+    }
     this.setState({symbol, name, pType, lastUpdated: date.toLocaleString('en-US')});
   }
 
   numberWithCommas = (x) => {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-
   handleItemClick = (e, {name}) => this.setState({activeItem: name});
+
   refreshInfo = () => {
     // TODO: refresh page with stock info
     let date = new Date();
     this.setState({lastUpdated: date.toLocaleString('en-US')})
   };
 
+  handleChangeInterval = (interval) => {
+    this.setState({stockHistory: {}, rangeSelected: interval});
+    const {symbol} = this.props.match.params;
+    const token = localStorage.getItem("token");
+    if (token) {
+      axios({
+        headers: AXIOS_HEADER(token),
+        method: 'post', url: `${BACKEND_URL}/stocks/getStockHistory/`,
+        data: {'ticker': symbol, 'range': interval}
+      }).then(({data}) => {
+        this.setState({stockHistory: data})
+      }).catch(({response}) => {
+        alert("Oops! " + response.data['error'])
+      });
+    }
+  };
+
   render() {
-    const {name, symbol, activeItem, lastUpdated} = this.state;
+    const {name, symbol, activeItem, lastUpdated, stockHistory, rangeSelected} = this.state;
 
     // dummy data to delete
     let data = [
@@ -48,18 +83,32 @@ export default class Stock extends Component {
       {key: "YTD Change", value: 0.14},
     ];
 
+    let intervals = ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y'];
+
     let view = (display) => {
-      if (display === 'price prediction') {
+      if (display === 'performance') {
+        return <Container align={'center'}>
+          <Grid columns={2} centered style={{minHeight: "530px", padding: "0px"}}>
+            <Grid.Column align={'right'} verticalAlign={'middle'} width={2}>
+              {intervals.map((interval, i) => <p key={i}><Button style={{width: '70px'}}
+                name={interval} color={rangeSelected === interval ? 'blue' : null}
+                onClick={() => this.handleChangeInterval(interval)}>{interval.toUpperCase()}</Button>
+              </p>)}
+            </Grid.Column>
+            <Grid.Column align={'left'} width={14}>
+              {stockHistory && stockHistory["close_data"] && stockHistory["volume_data"] ?
+                <PerformanceChart closeData={stockHistory["close_data"]}
+                                  volumeData={stockHistory["volume_data"]}/> : <Loader active/>}
+            </Grid.Column>
+          </Grid>
+        </Container>
+      } else if (display === 'price prediction') {
         return <Container align={'center'}>
           <Header>Price Prediction</Header>
         </Container>
       } else if (display === 'news') {
         return <Container align={'center'}>
           <Header>News</Header>
-        </Container>
-      } else if (display === 'graph') {
-        return <Container align={'center'}>
-          <Header>Graph stuff</Header>
         </Container>
       }
     };
@@ -118,9 +167,9 @@ export default class Stock extends Component {
           <Divider hidden/>
           <Menu pointing secondary>
             <Menu.Item
-              name='price prediction'
-              icon='chart line'
-              active={activeItem === 'price prediction'}
+              name='performance'
+              icon='chart bar outline'
+              active={activeItem === 'performance'}
               onClick={this.handleItemClick}
             />
             <Menu.Item
@@ -130,9 +179,9 @@ export default class Stock extends Component {
               onClick={this.handleItemClick}
             />
             <Menu.Item
-              name='graph'
-              icon='chart bar outline'
-              active={activeItem === 'graph'}
+              name='price prediction'
+              icon='chart line'
+              active={activeItem === 'price prediction'}
               onClick={this.handleItemClick}
             />
           </Menu>

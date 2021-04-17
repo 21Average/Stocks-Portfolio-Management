@@ -25,10 +25,9 @@ export default class AddPortfolioModal extends Component {
     if (token) {
       axios({
         headers: AXIOS_HEADER(token),
-        method: 'post', url: `${BACKEND_URL}/stocks/createPortfolio/`,
+        method: 'post', url: `${BACKEND_URL}/stocks/createNewPortfolio/`,
         data: {'ptype': ptype, 'name': name, 'desc': desc}
       }).then(({data}) => {
-        // this.handleClose();
         localStorage.setItem("p_id", data['id']);
         localStorage.setItem("p_name", data['name']);
         localStorage.setItem("p_type", data['ptype']);

@@ -83,7 +83,6 @@ export default class Portfolio extends Component {
       this.setState({pData: data, portfolioSelected: true, isTableLoading: false});
     }).catch(({response}) => {
       this.setState({showNoStockMsg: true, portfolioSelected: true, isTableLoading: false});
-      // console.log(response.data['error']);
     });
   };
 

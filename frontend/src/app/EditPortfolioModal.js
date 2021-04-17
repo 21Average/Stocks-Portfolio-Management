@@ -15,7 +15,7 @@ export default class EditPortfolioModal extends Component {
         <Header as={'h1'}>Edit "{portfolio['name']}"</Header>
         <Modal.Content>
           <Form onSubmit={this.handleSubmit}>
-            <Form.Input label={'Name'}/>
+            <Form.Input label={'Name'} placeholder={"max. 10 characters"}/>
             <Form.Input label={'Description'}/>
           </Form>
         </Modal.Content>

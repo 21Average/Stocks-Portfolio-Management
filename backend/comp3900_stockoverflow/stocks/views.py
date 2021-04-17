@@ -13,6 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from datetime import datetime, timezone, time
 
 
 def search_stock(url, stock_ticker):
@@ -76,8 +77,17 @@ def home(request):
     return render(request, 'stocks/home.html')
 
 
-def watchList_manage_form(request, portfolio_pk):
+def convert_date_to_timestamp(date, time_val):
+    y, m, d = date.split('-')
+    h, mi = time_val.split(':')
+    dt = datetime(int(y), int(m), int(d))
+    tm = time(int(h), int(mi))
+    combined_dt = datetime.combine(dt, tm)
+    return combined_dt.replace(tzinfo=timezone.utc).timestamp()
 
+
+# DJANGO FORM IMPLEMENTATION
+def watchList_manage_form(request, portfolio_pk):
     portfolio = Portfolio.objects.get(pk=portfolio_pk)
     if request.method == 'POST':
         if 'add_stock' in request.POST:
@@ -98,7 +108,7 @@ def watchList_manage_form(request, portfolio_pk):
                         portfolio.stock_list = [f'{ticker}']
                     portfolio.save()
                     form = form.save(commit=False)
-                    form.portfoilo = portfolio
+                    form.portfolio = portfolio
                     form.save()
                     messages.success(
                         request, f'{ticker} has been added successfully.')
@@ -113,7 +123,7 @@ def watchList_manage_form(request, portfolio_pk):
         return HttpResponseRedirect("") 
 
     else:
-        userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
+        userStock = list(Stock.objects.filter(portfolio=portfolio_pk))
         stockdata = portfolio.stock_list
 
         if portfolio.stock_list:
@@ -133,9 +143,7 @@ def watchList_manage_form(request, portfolio_pk):
         return render(request, 'stocks/manageWatchList.html', context)
 
 
-# DJANGO FORMS - CREATE/MANAGE PORTFOLIO
 def portfolio_create_form(request):
-
     portfolio_list = Portfolio.objects.all()
     form = PortfolioCreateForm()
     if request.method == "POST":
@@ -148,7 +156,6 @@ def portfolio_create_form(request):
                 return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
             elif form.ptype == "Portfolio":
                 return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
-
 
     context = {
         'portfolio_list': portfolio_list,
@@ -181,7 +188,7 @@ def portfolio_manage_form(request,portfolio_pk):
                         portfolio.stock_list = [f'{ticker}']
                     portfolio.save()
                     form = form.save(commit=False)
-                    form.portfoilo = portfolio
+                    form.portfolio = portfolio
                     form.save()
                     messages.success(
                         request, f'{ticker} has been added successfully.')
@@ -199,7 +206,7 @@ def portfolio_manage_form(request,portfolio_pk):
 
     
     else:
-        userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
+        userStock = list(Stock.objects.filter(portfolio=portfolio_pk))
         stockdata = portfolio.stock_list
 
         if portfolio.stock_list:
@@ -219,15 +226,14 @@ def portfolio_manage_form(request,portfolio_pk):
         return render(request, 'stocks/managePortfolio.html', context)
 
 
-def stock_info(request,userStock_pk):
-
+def stock_info(request, userStock_pk):
     ticker = Stock.objects.get(pk=userStock_pk)
     stockdata = history_data(ticker)
     context = {
         'stock': ticker,
         "stockdata": stockdata
     }
-    return render(request, 'stocks/stockInfo.html',context)
+    return render(request, 'stocks/stockInfo.html', context)
 
 
 def history_data(ticker, range='1d'):
@@ -248,10 +254,9 @@ def history_data(ticker, range='1d'):
         return data
 
 # IMPLEMENTATION FOR FRONT-END
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def portfolio_create_form(request):
+def create_portfolio(request):
     if request.method == "POST":
         request.data['owner'] = request.user.id
         serialized = PortfolioSerializer(data=request.data)
@@ -260,6 +265,22 @@ def portfolio_create_form(request):
             return Response(serialized.data, status=HTTP_201_CREATED)
         else:
             return Response(serialized.errors, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_portfolios(request):
+    if request.method == "DELETE":
+        portfolios = request.data['portfolios']
+        for port_name in portfolios:
+            portfolio = Portfolio.objects.get(name=port_name, owner_id=request.user.id)
+            if portfolio.ptype == "Transaction":
+                for stock in portfolio.stock_list:
+                    stock_obj = Stock.objects.get(ticker=stock, portfolio_id=portfolio.id)
+                    stock_obj.delete()
+            portfolio.delete()
+        return Response({"success": "Portfolio deleted"}, status=HTTP_200_OK)
+    return Response({"error": "Could not delete profile"}, status=HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
@@ -273,17 +294,15 @@ def get_portfolio_list(request):
         if serialized:
             return Response(serialized.data, status=HTTP_200_OK)
         else:
-            return Response({"error": "something went wrong"}, status=HTTP_400_BAD_REQUEST)
+            return Response(serialized.errors, status=HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_stock(request, portfolio_pk):
     portfolio = Portfolio.objects.get(pk=portfolio_pk)
     if request.method == 'POST':
         ticker = request.data['ticker']
-
         if ticker:
             if check_stock_ticker_existed(ticker, portfolio):
                 return Response({"error": f'{ticker} is already in Portfolio'}, status=HTTP_400_BAD_REQUEST)
@@ -306,10 +325,51 @@ def add_stock(request, portfolio_pk):
         return Response({"error": "Not a valid stock"}, status=HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_stock_data(request, portfolio_pk):
+    ticker = Stock.objects.get(ticker=request.data['ticker'], portfolio_id=portfolio_pk)
+    stockdata = history_data(ticker)
+    context = {
+        'stock': ticker,
+        "stockdata": stockdata
+    }
+    return render(request, 'stocks/stockInfo.html', context)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_stock_history(request):
+    if request.method == "POST":
+        time_interval = request.data['range']
+        # only send date, close, volume
+        close_data, volume_data, data = [], [], {}
+        history = history_data(ticker=request.data['ticker'], range=time_interval)
+        for i, value in enumerate(history):
+            close_data.append({
+                "time": value["date"],
+                "value": value["close"],
+            })
+            volume_data.append({
+                "time": value["date"],
+                "value": value["volume"],
+            })
+            if time_interval == '1d':  # using intra-day values, need to convert to UTC timestamp
+                timestamp = convert_date_to_timestamp(date=value["date"], time_val=value["minute"])
+                close_data[i]["time"] = timestamp
+                volume_data[i]["time"] = timestamp
+        if close_data and len(close_data) > 0:
+            data["close_data"] = close_data
+        if volume_data and len(volume_data) > 0:
+            data["volume_data"] = volume_data
+        if data and len(data) > 0:
+            return Response(data, status=HTTP_200_OK)
+    return Response({"error": "Could not retrieve stock history"}, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_stock_data(request, portfolio_pk):
     if request.method == "GET":
         portfolio = Portfolio.objects.get(pk=portfolio_pk)
         if portfolio.stock_list:
@@ -339,8 +399,8 @@ def get_stock_data(request, portfolio_pk):
                         "symbol": stock["symbol"],
                         "companyName": stock["companyName"],
                         "latestPrice": stock["latestPrice"],
-                        "changePercent": stock["changePercent"],
                         "previousClose": stock["previousClose"],
+                        "changePercent": stock["changePercent"],
                         "marketCap": stock["marketCap"],
                         "ytdChange": stock["ytdChange"],
                         "peRatio": stock["peRatio"],
@@ -350,3 +410,25 @@ def get_stock_data(request, portfolio_pk):
             if data and len(data) > 0:
                 return Response(data, status=HTTP_200_OK)
         return Response({"error": "Currently, there are no stocks in your portfolio!"}, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_stock(request, portfolio_pk):
+    if request.method == "DELETE":
+        portfolio = Portfolio.objects.get(pk=portfolio_pk)
+        stocks = request.data['stocks']
+        if stocks:
+            for ticker in stocks:
+                # delete stock from Stock table if Transaction portfolio
+                if portfolio.ptype == "Transaction":
+                    stock = Stock.objects.get(portfolio_id=portfolio_pk, ticker=ticker)
+                    stock.delete()
+                # delete from stock_list in Portfolio table
+                portfolio = Portfolio.objects.get(pk=portfolio_pk)
+                stock_list = portfolio.stock_list
+                if stock_list:
+                    stock_list.remove(ticker)
+                    portfolio.save()
+            return Response({"success": "Stock removed"}, status=HTTP_200_OK)
+        return Response({"error": "Could not delete stocks"}, status=HTTP_400_BAD_REQUEST)

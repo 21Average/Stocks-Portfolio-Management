@@ -1,5 +1,7 @@
 import React, {Component} from "react";
 import {Button, Form, Header, Modal} from "semantic-ui-react";
+import axios from "axios";
+import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
 
 export default class RemovePortfolioModal extends Component {
   state = {
@@ -21,6 +23,21 @@ export default class RemovePortfolioModal extends Component {
   handleRemovePortfolio = () => {
     const {portfoliosToRemove} = this.state;
     // remove portfolio here
+    const token = localStorage.getItem("token");
+    if (token) {
+      axios({
+        headers: AXIOS_HEADER(token),
+        method: 'delete', url: `${BACKEND_URL}/stocks/deletePortfolio/`,
+        data: {'portfolios': portfoliosToRemove}
+      }).then(() => {
+        localStorage.removeItem("p_id");
+        localStorage.removeItem("p_name");
+        localStorage.removeItem("p_type");
+        window.location.reload();
+      }).catch(({response}) => {
+        alert("Oops! " + response.data['error'])
+      })
+    }
     this.setState({openModal: false, portfoliosToRemove})
   };
   handleClose = () => this.setState({openModal: false});

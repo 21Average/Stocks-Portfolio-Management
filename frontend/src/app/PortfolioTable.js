@@ -1,13 +1,21 @@
 import React, {Component} from "react";
-import {Button, Container, Grid, Table} from "semantic-ui-react";
+import {Container, Grid, Table} from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import AddStockModal from "./AddStockModal";
-import history from "../history";
+import RemoveStockModal from "./RemoveStockModal";
 
 export default class Settings extends Component {
   state = {
     isLoading: false,
+    stockList: []
   };
+
+  componentDidMount() {
+    const {pData} = this.props;
+    let stockList = [];
+    pData.forEach(({symbol}) => stockList.push({"name" : symbol}));
+    this.setState({stockList})
+  }
 
   numberWithCommas = (x) => {
     if (x) {
@@ -18,10 +26,9 @@ export default class Settings extends Component {
 
   render() {
     const {pData, pID, pName, pType} = this.props;
+    const {stockList} = this.state;
     const transactionHeaderRow = ['Symbol', 'Company', 'Quantity', 'Buying Price', 'Latest Price', 'Previous Close', 'Change (%)']; // 'Industry'];
     const watchlistHeaderRow = ['Symbol', 'Company', 'Latest Price', 'Previous Close', 'Change', 'Return YTD', 'PE Ratio', '52 Week Low', '52 Week High'];
-
-    console.log(pData);
 
     let headerRow = pType === 'Transaction' ? transactionHeaderRow : watchlistHeaderRow;
     let bodyRow = pType === 'Transaction' ? pData.map(({symbol, companyName, quality, buyingPrice, latestPrice, previousClose, changePercent}, i) => {
@@ -70,7 +77,7 @@ export default class Settings extends Component {
         </Grid.Row>
         <Grid.Row>
           <AddStockModal pID={pID} pName={pName} pType={pType}/>
-          <Button color={'red'}>Remove Stock</Button>
+          {stockList && <RemoveStockModal pID={pID} stockList={stockList}/>}
         </Grid.Row>
       </Grid>
     </Container>

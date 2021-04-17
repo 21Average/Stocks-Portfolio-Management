@@ -31,7 +31,6 @@ export default class AddStockModal extends Component {
         method: 'post', url: `${BACKEND_URL}/stocks/${this.props.pID}/addStock/`,
         data: {'ticker': name, 'buying_price': price, 'quality': quantity}
       }).then(() => {
-        // this.handleClose();
         localStorage.setItem("p_id", this.props.pID);
         localStorage.setItem("p_name", this.props.pName);
         localStorage.setItem("p_type", this.props.pType);
