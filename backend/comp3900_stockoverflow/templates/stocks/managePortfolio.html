@@ -16,7 +16,7 @@ Manage Portfolio
 
     <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
         {% csrf_token %}
-        {{form.as_p}}
+        
         <input class="form-control mr-sm-2" type="add" placeholder="Stock Ticker or Name" aria-label="Add" name="ticker">
         <input class="form-control mr-sm-2" type="add" placeholder="Buying Price" aria-label="Add" name="buying_price">
         <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
@@ -47,6 +47,7 @@ Manage Portfolio
             <th scope="col">Quality</th>
             <th scope="col">Profit</th>
             <th scope="col">Buy</th>
+            <th scope="col">Sell</th>
             <!--th scope="col">Detail</th-->
             <th scope="col">Delete Stock</th>
           </tr>
@@ -76,12 +77,20 @@ Manage Portfolio
                 <td>
                     <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
                         {% csrf_token %}
-                        {{form.as_p}}
                         <input type="hidden" name="ticker" value={{userStock.ticker}}>
                         <input type="hidden" name="stock_id" value={{userStock.pk}}>
                         <input class="form-control mr-sm-2" type="add" placeholder="Buying Price" aria-label="Add" name="buying_price">
                         <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
                         <input name=buy_stock class="btn btn-outline-danger btn-sm" type="submit" value="Buy Stock">
+                </form>
+                </td>
+                <td>
+                    <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="ticker" value={{userStock.ticker}}>
+                        <input type="hidden" name="stock_id" value={{userStock.pk}}>
+                        <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
+                        <input name=sell_stock class="btn btn-outline-danger btn-sm" type="submit" value="sell Stock">
                 </form>
                 </td>
                 <td>

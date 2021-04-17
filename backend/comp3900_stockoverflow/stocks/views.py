@@ -225,12 +225,23 @@ def portfolio_manage_form(request,portfolio_pk):
                         request, f'{ticker} has been added successfully.')
                         return HttpResponseRedirect("") 
 
+        elif 'sell_stock' in request.POST:
+            ticker = str(request.POST.get('ticker'))
+            quality = request.POST['quality']
+            int_quality = int(quality)
+            stock_pk = request.POST.get('stock_id')
+            stock = Stock.objects.filter(id=stock_pk).get()
+
+            newquality = stock.quality - int_quality
+            stock.quality = newquality
+            stock.save()
+
             return HttpResponseRedirect("")
                
 
     else:
         userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
-        #stock_list = portfolio.stock_list
+        stock_list = portfolio.stock_list
 
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
