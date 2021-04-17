@@ -213,8 +213,27 @@ def portfolio_manage_form(request,portfolio_pk):
 def stock_info(request,userStock_pk):
 
     ticker = Stock.objects.get(pk=userStock_pk)
-
+    stockdata = history_data(ticker)
     context = {
         'stock': ticker,
+        "stockdata": stockdata
     }
     return render(request, 'stocks/stockInfo.html',context)
+
+
+def history_data(ticker, range='1d'):
+    if range not in ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y']:
+        return False
+    else:
+        my_token = settings.IEXCLOUD_TEST_API_TOKEN
+        base_url = "https://sandbox.iexapis.com/stable/stock/"
+        url = base_url + str(ticker) + "/chart/" + range + "?token=" + my_token
+        data = requests.get(url)
+
+        if data.status_code == 200:
+            data = json.loads(data.content)
+        else:
+            data = {
+                'Error': 'There was a problem with your provided ticker symbol. Please try again'}
+
+        return data
