@@ -44,9 +44,9 @@ Manage Watch List
           </tr>
         </thead>
         <tbody>
-            {% for stock in stockdata %}
+            {% for stock,userStock in stockdata %}        
             <tr>
-                <td>{{stock.symbol}}</td>
+                <td><a href="{% url 'stocks:stockInfo' userStock.pk %}">{{stock.symbol}}</a></td>
                 <td>{{stock.companyName}}</td>
                 <td>${{stock.latestPrice |floatformat:-2 }}</td>
                 <td>${{stock.previousClose |floatformat:-2 }}</td>

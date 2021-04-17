@@ -106,7 +106,9 @@ def watchList_manage_form(request, portfolio_pk):
         return HttpResponseRedirect("") 
 
     else:
+        userStock = list(Stock.objects.filter(portfoilo=portfolio_pk))
         stockdata = portfolio.stock_list
+
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
 
@@ -118,10 +120,11 @@ def watchList_manage_form(request, portfolio_pk):
                 request, 'Currently, there are no stocks in your portfolio!')
 
         context = {
-            'stockdata': stockdata,
-            'portfolio': portfolio
+            'stockdata': zip(stockdata,userStock),
+            'portfolio': portfolio,
         }
         return render(request, 'stocks/manageWatchList.html', context)
+
 
 def portfolio_create_form(request):
 
