@@ -44,7 +44,7 @@ export default class Settings extends Component {
         <Table.Cell>{buyingPrice}</Table.Cell>
         <Table.Cell>{latestPrice}</Table.Cell>
         <Table.Cell>{previousClose}</Table.Cell>
-        <Table.Cell><p style={{color: percentColour}}>{percentSymbol}{percent}</p></Table.Cell>
+        <Table.Cell><p style={{color: percentColour}}>{percentSymbol + percent}</p></Table.Cell>
       </Table.Row>
     }) : pData.map(({symbol, companyName, latestPrice, previousClose, changePercent, marketCap, ytdChange, peRatio, week52Low, week52High}, i) => {
       let percent = (changePercent * 100).toFixed(2);
@@ -53,7 +53,7 @@ export default class Settings extends Component {
       return <Table.Row key={i}>
         <Table.Cell>{symbol}</Table.Cell>
         <Table.Cell>
-          <Link to={{pathname: `/stock/${symbol}`, state: {pType: pType, name: companyName}}}>{companyName}</Link>
+          <Link to={{pathname: `/stock/${symbol}`, state: {pType: pType}}}>{companyName}</Link>
         </Table.Cell>
         <Table.Cell>{latestPrice ? latestPrice : '-'}</Table.Cell>
         <Table.Cell>{previousClose ? previousClose : '-'}</Table.Cell>

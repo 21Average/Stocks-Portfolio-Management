@@ -113,13 +113,13 @@ export default class Portfolio extends Component {
                       <br/>
                       <Grid columns={3}>
                         <Grid.Column>
-                          <Header><Header.Subheader>Portfolio Value: </Header.Subheader>$15,345.23</Header>
+                          <Header><Header.Subheader>Portfolio Value: </Header.Subheader>$--</Header>
                         </Grid.Column>
                         <Grid.Column>
-                          <Header color={'green'}><Header.Subheader>Today's Gain/Loss: </Header.Subheader>+86.34 (1.34%)</Header>
+                          <Header color={'green'}><Header.Subheader>Today's Gain/Loss: </Header.Subheader>-- (--%)</Header>
                         </Grid.Column>
                         <Grid.Column>
-                          <Header color={'green'}><Header.Subheader>Total Gain/Loss: </Header.Subheader>+354.43 (7.35%)</Header>
+                          <Header color={'green'}><Header.Subheader>Total Gain/Loss: </Header.Subheader>-- (--%)</Header>
                         </Grid.Column>
                       </Grid>
                       <br/>

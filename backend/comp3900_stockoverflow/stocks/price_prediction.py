@@ -59,5 +59,6 @@ def prediction(raw_data):
     predictions = model.predict(x_test)
     predictions = scaler.inverse_transform(predictions)
     predicted_price = [i for item in predictions for i in item]
+    predicted_price.reverse()
 
     return predicted_price

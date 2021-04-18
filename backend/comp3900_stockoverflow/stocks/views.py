@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 import json
 from .models import Stock, Portfolio
-from .forms import PortfolioCreateForm, PortfolioManageForm,WatchListManageForm
+from .forms import PortfolioCreateForm, PortfolioManageForm, WatchListManageForm
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from .serializers import PortfolioSerializer, StockSerializer
@@ -12,10 +12,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from datetime import datetime, timezone, time
+from datetime import datetime, timedelta
 from .price_prediction import prediction
 import pandas as pd
-#news sentiment
+# news sentiment
 from .news_sentiment import analyse_news_sentiment, predict_rating
 
 
@@ -60,7 +60,7 @@ def check_valid_stock_ticker(stock_ticker):
     return False
 
 
-def check_stock_ticker_existed(stock_ticker,portfolio):
+def check_stock_ticker_existed(stock_ticker, portfolio):
     try:
         stockdata = portfolio.stock_list
         if portfolio.stock_list:
@@ -80,13 +80,11 @@ def home(request):
     return render(request, 'stocks/home.html')
 
 
-def convert_date_to_timestamp(date, time_val):
-    y, m, d = date.split('-')
+def convert_date_to_timestamp(date_val, time_val):
+    y, m, d = date_val.split('-')
     h, mi = time_val.split(':')
-    dt = datetime(int(y), int(m), int(d))
-    tm = time(int(h), int(mi))
-    combined_dt = datetime.combine(dt, tm)
-    return combined_dt.replace(tzinfo=timezone.utc).timestamp()
+    dt = datetime(int(y), int(m), int(d), int(h), int(mi))
+    return dt.timestamp()
 
 
 # DJANGO FORM IMPLEMENTATION
@@ -98,11 +96,11 @@ def watchList_manage_form(request, portfolio_pk):
             form = WatchListManageForm(request.POST or None)
 
             if form.is_valid():
-                
-                if check_stock_ticker_existed(ticker,portfolio):
+
+                if check_stock_ticker_existed(ticker, portfolio):
                     messages.warning(
                         request, f'{ticker} is already existed in Portfolio.')
-                    return HttpResponseRedirect("") 
+                    return HttpResponseRedirect("")
 
                 if check_valid_stock_ticker(ticker):
                     if portfolio.stock_list:
@@ -115,15 +113,15 @@ def watchList_manage_form(request, portfolio_pk):
                     form.save()
                     messages.success(
                         request, f'{ticker} has been added successfully.')
-                    return HttpResponseRedirect("") 
+                    return HttpResponseRedirect("")
 
-        elif 'remove_stock' in request.POST: 
+        elif 'remove_stock' in request.POST:
             ticker = str(request.POST.get('stock_symbol')).lower()
             portfolio.stock_list.remove(ticker)
             portfolio.save()
-            return HttpResponseRedirect("") 
+            return HttpResponseRedirect("")
         messages.warning(request, 'Please enter a valid ticker name.')
-        return HttpResponseRedirect("") 
+        return HttpResponseRedirect("")
 
     else:
         userStock = list(Stock.objects.filter(portfolio=portfolio_pk))
@@ -140,7 +138,7 @@ def watchList_manage_form(request, portfolio_pk):
                 request, 'Currently, there are no stocks in your portfolio!')
 
         context = {
-            'stockdata': zip(stockdata,userStock),
+            'stockdata': zip(stockdata, userStock),
             'portfolio': portfolio,
         }
         return render(request, 'stocks/manageWatchList.html', context)
@@ -153,7 +151,7 @@ def portfolio_create_form(request):
         form = PortfolioCreateForm(request.POST or None)
         if form.is_valid():
             form = form.save(commit=False)
-            #form.stock_list = [99]
+            # form.stock_list = [99]
             form.save()
             if form.ptype == "WatchList":
                 return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
@@ -162,12 +160,12 @@ def portfolio_create_form(request):
 
     context = {
         'portfolio_list': portfolio_list,
-        'form':form
+        'form': form
     }
-    return render(request, 'stocks/createPortfolio.html',context)
+    return render(request, 'stocks/createPortfolio.html', context)
 
 
-def portfolio_manage_form(request,portfolio_pk):
+def portfolio_manage_form(request, portfolio_pk):
     portfolio = Portfolio.objects.get(pk=portfolio_pk)
     if request.method == 'POST':
 
@@ -178,11 +176,11 @@ def portfolio_manage_form(request,portfolio_pk):
             form = PortfolioManageForm(request.POST or None)
 
             if form.is_valid():
-                
-                if check_stock_ticker_existed(ticker,portfolio):
+
+                if check_stock_ticker_existed(ticker, portfolio):
                     messages.warning(
                         request, f'{ticker} is already existed in Portfolio.')
-                    return HttpResponseRedirect("") 
+                    return HttpResponseRedirect("")
 
                 if check_valid_stock_ticker(ticker):
                     if portfolio.stock_list:
@@ -195,26 +193,26 @@ def portfolio_manage_form(request,portfolio_pk):
                     form.save()
                     messages.success(
                         request, f'{ticker} has been added successfully.')
-                    return HttpResponseRedirect("") 
+                    return HttpResponseRedirect("")
 
-        elif 'remove_stock' in request.POST: 
+        elif 'remove_stock' in request.POST:
             ticker = str(request.POST.get('stock_symbol')).lower()
             portfolio.stock_list.remove(ticker)
             portfolio.save()
-            return HttpResponseRedirect("") 
+            return HttpResponseRedirect("")
 
         else:
             messages.warning(request, 'Please enter a valid ticker name.')
-            return HttpResponseRedirect("") 
+            return HttpResponseRedirect("")
 
-    
+
     else:
         userStock = list(Stock.objects.filter(portfolio=portfolio_pk))
         stockdata = portfolio.stock_list
 
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
-    
+
             tickers = ','.join(ticker_list)
             base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
             stockdata = search_stock_batch(base_url, tickers)
@@ -227,16 +225,16 @@ def portfolio_manage_form(request,portfolio_pk):
                 'stockdata': zip(stockdata, userStock),
                 'portfolio': portfolio,
                 'news_sentiment': news_data,
-                #'user_stocks':user_stock
+                # 'user_stocks':user_stock
             }
         else:
             messages.info(
                 request, 'Currently, there are no stocks in your portfolio!')
 
             context = {
-                'stockdata': zip(stockdata,userStock),
+                'stockdata': zip(stockdata, userStock),
                 'portfolio': portfolio,
-                #'user_stocks':user_stock
+                # 'user_stocks':user_stock
             }
         return render(request, 'stocks/managePortfolio.html', context)
 
@@ -244,7 +242,7 @@ def portfolio_manage_form(request,portfolio_pk):
 def stock_info(request, userStock_pk):
     ticker = Stock.objects.get(pk=userStock_pk)
     stockdata = history_data(ticker)
-    predicted_price = prediction(history_data(ticker,'1y'))
+    predicted_price = prediction(history_data(ticker, '1y'))
     context = {
         'stock': ticker,
         "stockdata": stockdata,
@@ -269,6 +267,7 @@ def history_data(ticker, range='1d'):
                 'Error': 'There was a problem with your provided ticker symbol. Please try again'}
 
         return data
+
 
 # IMPLEMENTATION FOR FRONT-END
 @api_view(['POST'])
@@ -341,16 +340,28 @@ def add_stock(request, portfolio_pk):
         return Response({"error": "Not a valid stock"}, status=HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def get_stock_data(request, portfolio_pk):
-    ticker = Stock.objects.get(ticker=request.data['ticker'], portfolio_id=portfolio_pk)
-    stockdata = history_data(ticker)
-    context = {
-        'stock': ticker,
-        "stockdata": stockdata
-    }
-    return render(request, 'stocks/stockInfo.html', context)
+def get_stock_data(request):
+    base_url = 'https://sandbox.iexapis.com/stable/stock/'
+    stock = search_stock(base_url, request.data['ticker'])
+    if 'Error' in stock:
+        return Response(stock, status=HTTP_400_BAD_REQUEST)
+    else:
+        # select data to send
+        data = {
+            "symbol": stock["symbol"],
+            "companyName": stock["companyName"],
+            "latestPrice": stock["latestPrice"],
+            "previousClose": stock["previousClose"],
+            "changePercent": stock["changePercent"],
+            "marketCap": stock["marketCap"],
+            "ytdChange": stock["ytdChange"],
+            "peRatio": stock["peRatio"],
+            "week52High": stock["week52High"],
+            "week52Low": stock["week52Low"]
+        }
+        return Response(data, status=HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -371,7 +382,7 @@ def get_stock_history(request):
                 "value": value["volume"],
             })
             if time_interval == '1d':  # using intra-day values, need to convert to UTC timestamp
-                timestamp = convert_date_to_timestamp(date=value["date"], time_val=value["minute"])
+                timestamp = convert_date_to_timestamp(date_val=value["date"], time_val=value["minute"])
                 close_data[i]["time"] = timestamp
                 volume_data[i]["time"] = timestamp
         if close_data and len(close_data) > 0:
@@ -381,6 +392,33 @@ def get_stock_history(request):
         if data and len(data) > 0:
             return Response(data, status=HTTP_200_OK)
     return Response({"error": "Could not retrieve stock history"}, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_stock_prediction(request):
+    if request.method == "POST":
+        close_data, prediction_data, data = [], [], {}
+        ticker = request.data['ticker']
+        history = history_data(ticker=ticker, range='1y')
+        for h in history:
+            close_data.append({
+                "time": h["date"],
+                "value": h["close"],
+            })
+        price_prediction = prediction(history)
+        for i, p in enumerate(price_prediction):
+            curr_date = datetime.now().date() + timedelta(days=i)
+            prediction_data.append({
+                "time": curr_date,
+                "value": p,
+            })
+        if close_data and len(close_data) > 0 and prediction_data and len(prediction_data) > 0:
+            data['close_data'] = close_data
+            data['prediction_data'] = prediction_data
+        if data and len(data) > 0:
+            return Response(data, status=HTTP_200_OK)
+    return Response({"error": "Could not retrieve stock price prediction"}, status=HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
