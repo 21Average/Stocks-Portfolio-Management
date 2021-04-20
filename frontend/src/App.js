@@ -51,18 +51,18 @@ export default class App extends Component {
       }, {
         path: '/login', component: Login
       }, {
-        path: '/landing', component: Landing
+        path: '/', component: Landing
       },
     ];
 
     return <Router history={history}>
       <div className={"page-content"}>
         <Switch>
-          <PrivateRoute exact path={'/landing'} component={Landing}/>
+          <PrivateRoute exact path={'/'} component={Landing}/>
           {routes.map(({path, component}, i) =>
             <Route key={i} exact path={path} component={component}/>
           )}
-          <Route exact path={'/'}><Redirect to={'/landing'}/></Route>
+          <Route exact path={'/'}><Redirect to={'/'}/></Route>
         </Switch>
       </div>
     </Router>
