@@ -6,8 +6,8 @@ import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
 import PerformanceChart from "./PerformanceChart";
 import PricePredictionChart from "./PricePredictionChart";
-import Display from "./Display.js";
-import './Display.css';
+import Search from "./Search.js";
+/* import "./Search.css"; */
 
 
 export default class Stock extends Component {
@@ -174,7 +174,7 @@ export default class Stock extends Component {
       } else if (display === 'related news') {
         return <Container align={'center'}>
           <Header>Related News</Header>
-          <Display default={this.state.value} />
+          <Search default="bbc-news"/>
         </Container>
       } else if (display === 'price prediction') {
         return <Container>
