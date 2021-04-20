@@ -174,7 +174,7 @@ export default class Stock extends Component {
       } else if (display === 'related news') {
         return <Container align={'center'}>
           <Header>Related News</Header>
-          <Search default="bbc-news" qkey={name}/>
+          <Search default="business-insider-uk" qkey={symbol}/>
         </Container>
       } else if (display === 'price prediction') {
         return <Container>

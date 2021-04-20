@@ -72,7 +72,7 @@ class Display extends Component {
                 </div>
               </div>
               <div className="image">
-                <img src={news.urlToImage} alt="" />
+                <img src={news.urlToImage} alt="News Article Image" />
               </div>
             </div>
           );

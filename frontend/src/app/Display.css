@@ -11,7 +11,7 @@
 .cardsContainer {
 	flex: 1;
 }
-
+/* 
 .card:nth-child(odd) {
 	border-right: 1px solid grey;
 }
@@ -21,7 +21,7 @@
 	border-left: 1px solid grey;
 	margin-left: -1px;
 }
-
+ */
 .author {
 	display: flex;
 	flex-wrap: wrap;
@@ -38,16 +38,20 @@
 .card {
 	display: flex;
 	flex-direction: row;
-	width: 49%;
-	padding: 5px;
-	margin: 10px 0;
+	width: 100%;
+	padding: 6px;
+	margin: 0px;
 	border-bottom: 1px solid grey;
+    border-top: 1px solid grey;
+    border-right: 1px solid grey;
+    border-left: 1px solid grey;
 }
 
 .image {
 	padding-left: 1rem;
 	width: 40%;
-	margin-bottom: 0;
+	margin-bottom: 0px;
+    margin-top: 5px;
 }
 
 .cardsContainer img {
