@@ -14,17 +14,12 @@ class Stock(models.Model):
     buying_price = models.DecimalField(max_digits=10,verbose_name ='Buying Price',decimal_places=2,default=0)
     #balance = models.DecimalField(decimal_places=2)
     portfoilo = models.ForeignKey("Portfolio", verbose_name= 'Portfolio' ,on_delete=models.CASCADE)
-    #industry = models.CharField(verbose_name ='Belong Industry', max_length=50)
+    company = models.CharField(verbose_name ='Company Name', max_length=50,default='')
+    industry = models.CharField(verbose_name ='Industry', max_length=50,default='')
 
     def save(self, *args, **kwargs):
         self.ticker = self.ticker.upper()
         return super(Stock, self).save(*args, **kwargs)
-    # @staticmethod
-    # def profit(buy_price, current_price, quality):
-    #     diff = buy_price - current_price
-    #     profit = diff * quality
-
-    #     return profit
 
     def __str__(self):
         return self.ticker
@@ -48,4 +43,6 @@ class Portfolio(models.Model):
     def __str__(self):
          return "{}:{}".format(self.belong_user.email,self.name)
 
-    
+class Industry(models.Model):
+    industry_name = models.CharField(verbose_name ='Industry', max_length=50)
+

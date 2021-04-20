@@ -8,6 +8,30 @@ from .forms import PortfolioCreateForm, PortfolioManageForm,WatchListManageForm
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 import decimal
+from urllib.request import urlopen
+
+#added
+def get_industry(symbol):
+    key = settings.FMP_API
+    base_url = ("https://financialmodelingprep.com/api/v3/profile/")
+    url = base_url+symbol+"?apikey=" + key
+    response = urlopen(url)
+    data = json.loads(response.read().decode("utf-8"))
+    for info in data:
+        sector = info['sector']
+
+    return sector
+#added
+def get_company(symbol):
+    key = settings.FMP_API
+    base_url = ("https://financialmodelingprep.com/api/v3/profile/")
+    url = base_url+symbol+"?apikey=" + key
+    response = urlopen(url)
+    data = json.loads(response.read().decode("utf-8"))
+    for info in data:
+        company= info['companyName']
+
+    return company
 
 def search_stock(url, stock_ticker):
     my_token = settings.IEXCLOUD_TEST_API_TOKEN
@@ -93,6 +117,9 @@ def watchList_manage_form(request, portfolio_pk):
                     portfolio.save()
                     form = form.save(commit=False)
                     form.portfoilo = portfolio
+                     #added
+                    form.industry = get_industry(f'{ticker}')
+                    form.company = get_company(f'{ticker}')
                     form.save()
                     messages.success(
                         request, f'{ticker} has been added successfully.')
@@ -183,6 +210,9 @@ def portfolio_manage_form(request,portfolio_pk):
                     portfolio.save()
                     form = form.save(commit=False)
                     form.portfoilo = portfolio
+                    #added
+                    form.industry = get_industry(f'{ticker}')
+                    form.company = get_company(f'{ticker}')
                     form.save()
                     messages.success(
                         request, f'{ticker} has been added successfully.')
@@ -269,12 +299,50 @@ def portfolio_manage_form(request,portfolio_pk):
         }
         return render(request, 'stocks/managePortfolio.html', context)
 
+#added
+def get_news(symbol):
+    key = settings.FMP_API
+    base_url = ("https://financialmodelingprep.com/api/v3/stock_news?")
+    url = base_url+"ticker="+symbol+ "&limit=50&apikey=" + key
+    response = urlopen(url)
+    data = json.loads(response.read().decode("utf-8"))
+    return data
+
+#added
+def get_lastest_news():
+    key = settings.FMP_API
+    base_url = ("https://financialmodelingprep.com/api/v3/stock_news?")
+    url = base_url+"&limit=50&apikey=" + key
+    response = urlopen(url)
+    data = json.loads(response.read().decode("utf-8"))
+    return data
+
+#added
+#def get_industry_news(industry):
+
+
 def stock_info(request,userStock_pk):
 
     ticker = Stock.objects.get(pk=userStock_pk)
-
+    #added
+    news = get_news(ticker)
     context = {
         'stock': ticker,
+        'new':news
     }
     return render(request, 'stocks/stockInfo.html',context)
 
+def news_page(request):
+    data = get_lastest_news()
+
+    context = {
+        'data': data,
+    }
+    return render(request, 'stocks/newsPage.html',context)
+
+# def recommendation(request,user_pk):
+#     if request.method == 'POST':
+#         if 'add_industry' in request.POST:
+#             industry = request.POST['industry']
+    
+#     else:

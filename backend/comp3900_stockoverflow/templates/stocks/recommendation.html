@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+
+{% endblock %}
+{% block title %}
+Recommendation
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="{% url 'stocks:recommendation'%}" class="form-inline my-2 my-lg-0">
+    {% csrf_token %}
+    <input class="form-control mr-sm-2" type="add" placeholder="Enter Interested Industry" aria-label="Add" name="industry">
+    <input name=add_industry class="btn btn-outline-danger btn-sm" type="submit" value="Add Industry">
+</form>
