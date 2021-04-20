@@ -7,6 +7,8 @@ import Dashboard from "./app/Dashboard";
 import Portfolio from "./app/Portfolio";
 import PortfolioList from "./app/PortfolioList";
 import Stock from "./app/Stock";
+import Landing from "./app/Landing";
+
 // import Recommendations from "./app/Recommendations";
 // import News from "./app/News";
 import Settings from "./app/Settings";
@@ -46,17 +48,19 @@ export default class App extends Component {
         path: '/register', component: Register
       }, {
         path: '/login', component: Login
+      }, {
+        path: '/landing', component: Landing
       },
     ];
 
     return <Router history={history}>
       <div className={"page-content"}>
         <Switch>
-          <PrivateRoute exact path={'/dashboard'} component={Dashboard}/>
+          <PrivateRoute exact path={'/landing'} component={Landing}/>
           {routes.map(({path, component}, i) =>
             <Route key={i} exact path={path} component={component}/>
           )}
-          <Route exact path={'/'}><Redirect to={'/dashboard'}/></Route>
+          <Route exact path={'/'}><Redirect to={'/landing'}/></Route>
         </Switch>
       </div>
     </Router>
