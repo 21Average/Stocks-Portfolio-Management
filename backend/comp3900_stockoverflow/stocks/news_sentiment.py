@@ -355,11 +355,6 @@ def predict_rating(news, if_print=False):
             else:
                 return "Slightly Positive", rating_svc[2]
 
-def predict_news_series(news):
-    result = predict_rating(news['Headline'])
-    news["Sentiment"] = result[0]
-    news["Score"]= result[1]
-    return news
 
 ## referene: https://towardsdatascience.com/stock-news-sentiment-analysis-with-python-193d4b4378d4
 
@@ -459,3 +454,58 @@ def analyse_news_sentiment(tickers, n = 1):
     df = df.sort_values('Mean Sentiment', ascending=False) """
 
     return news
+
+
+def predict_news_series(news):
+    result = predict_rating(news['Headline'])
+    news["Sentiment"] = result[0]
+    news["Score"] = result[1]
+    return news
+    
+def get_news(ticker, n=5):
+    # Get Data
+    finwiz_url = 'https://finviz.com/quote.ashx?t='
+    news_tables = {}
+
+    url = finwiz_url + ticker
+    req = Request(url=url, headers={'user-agent': 'my-app/0.0.1'})
+    resp = urlopen(req)
+    html = BeautifulSoup(resp, features="lxml")
+    news_table = html.find(id='news-table')
+    news_tables[ticker] = news_table
+
+    # Iterate through the news
+    parsed_news = []
+    for file_name, news_table in news_tables.items():
+        i = 0
+        for x in news_table.findAll('tr'):
+            if i < n:
+                #print(x)
+                source = x.span.get_text()
+                text = x.a.get_text()
+                date_scrape = x.td.text.split()
+                news_url = x.a['href']
+
+                if len(date_scrape) == 1:
+                    time = date_scrape[0]
+
+                else:
+                    date = date_scrape[0]
+                    time = date_scrape[1]
+
+                ticker = file_name.split('_')[0]
+
+                parsed_news.append(
+                    [ticker, date, time, text, news_url, source])
+            else:
+                break
+            i += 1
+
+    columns = ['Ticker', 'Date', 'Time', 'Headline', 'Link', 'Source']
+    news = pd.DataFrame(parsed_news, columns=columns)
+    # Aply predicting rating
+    # news = news.apply(predict_news_series, axis=1)
+    news['Date'] = pd.to_datetime(news.Date).dt.date
+
+    return news
+
