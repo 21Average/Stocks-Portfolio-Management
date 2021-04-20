@@ -14,7 +14,9 @@ class Search extends Component {
       data: [],
       count: 0,
       // deafult value:'bbc-news'
-      value: this.props.default
+      value: this.props.default,
+      // qkey is the search value
+      qkey: this.props.qkey
     };
     this.handleChange = this.handleChange.bind(this);
 
@@ -51,8 +53,8 @@ class Search extends Component {
             );
           })}
         </select>
-        <Outlet default={this.state.value} />
-        <Display default={this.state.value} />
+        <Outlet default={this.state.value} qkey={this.state.qkey}/>
+        <Display default={this.state.value} qkey={this.state.qkey}/>
       </div>
     );
   }

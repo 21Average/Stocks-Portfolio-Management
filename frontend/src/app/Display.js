@@ -7,7 +7,8 @@ class Display extends Component {
     super(props);
     // Set initial state
     this.state = {
-      articles: []
+      articles: [],
+      qkey: this.props.qkey,
     };
   }
 
@@ -18,7 +19,7 @@ class Display extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps !== this.props) {
-      this.setState({ url: `https://newsapi.org/v2/top-headlines?sources=${nextProps.default}&apiKey=3d49ef572f9047e8bd276fb0d3b540ef` });
+      this.setState({ url: `https://newsapi.org/v2/everything?q=${this.state.qkey}&sources=${nextProps.default}&apiKey=3d49ef572f9047e8bd276fb0d3b540ef` });
 
       this.getArticles(nextProps.default);
     }
@@ -36,11 +37,9 @@ class Display extends Component {
   }
 
   getArticles(url) {
-    // const apiKey = process.env.REACT_APP_API_KEY;
     // Make HTTP reques with Axios
     axios
-      // .get(`https://newsapi.org/v2/top-headlines?sources=${url}&apiKey=3d49ef572f9047e8bd276fb0d3b540ef`)
-      .get('https://newsapi.org/v2/everything?q=Apple&from=2021-04-04&sortBy=popularity&language=en&apiKey=3d49ef572f9047e8bd276fb0d3b540ef')
+      .get(`https://newsapi.org/v2/everything?q=${this.state.qkey}&sources=${url}&apiKey=3d49ef572f9047e8bd276fb0d3b540ef`)
       .then(res => {
         const articles = res.data.articles;
         // Set state with result
