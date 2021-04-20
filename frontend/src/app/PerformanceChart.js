@@ -3,7 +3,7 @@ import {createChart} from 'lightweight-charts';
 
 export const months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
 
-export default function PerformanceChartCopy(props) {
+export default function PerformanceChart(props) {
   const ref = React.useRef();
   useEffect(() => {
     let chart = createChart(ref.current, {

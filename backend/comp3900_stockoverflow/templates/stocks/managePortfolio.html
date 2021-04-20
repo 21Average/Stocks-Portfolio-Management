@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
 
+{% block head %}
+
+{% endblock %}
 {% block title %}
 Manage Portfolio
 {% endblock %}
@@ -12,6 +16,7 @@ Manage Portfolio
 
     <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
         {% csrf_token %}
+        
         <input class="form-control mr-sm-2" type="add" placeholder="Stock Ticker or Name" aria-label="Add" name="ticker">
         <input class="form-control mr-sm-2" type="add" placeholder="Buying Price" aria-label="Add" name="buying_price">
         <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
@@ -37,24 +42,62 @@ Manage Portfolio
           <tr>
             <th scope="col">Symbol</th>
             <th scope="col">Company</th>
-            <th scope="col">Lastest Price</th>
+            <th scope="col">Current Price</th>
             <th scope="col">Buying Price</th>
             <th scope="col">Quality</th>
-            <!--th scope="col">Profits</th-->
+            <th scope="col">Profit</th>
+            <th scope="col">Buy</th>
+            <th scope="col">Sell</th>
+            <!--th scope="col">Detail</th-->
             <th scope="col">Delete Stock</th>
           </tr>
         </thead>
         <tbody>
-            {% for stock,userStock in stockdata %}             
-                <td><a href="{% url 'stocks:stockInfo' userStock.pk %}">{{stock.symbol}}</a></td>
-                <td>{{stock.companyName}}</td>
-                <td>${{stock.latestPrice |floatformat:-2 }}</td>
+            {% for userStock in stockdata %}     
+                <td>
+                <a href="{% url 'stocks:stockInfo' userStock.pk %}">{{userStock.ticker}}</a>
+                </td>
+
+                {% for stock in stock_list %}
+                    {% if stock.symbol == userStock.ticker %}
+                        <td>{{stock.companyName}}</td>
+                    {% endif %}
+                {% endfor %}    
+
+                {% for stock in stock_list %}
+                    {% if stock.symbol == userStock.ticker %}
+                        <td>${{stock.latestPrice |floatformat:-2 }}</td>
+                    {% endif %}
+                {% endfor %}    
                 <td>${{userStock.buying_price}}</td>
-                <td>${{userStock.quality}}</td>      
+                <td>{{userStock.quality}}</td>
+                <td>
+                    ${{userStock.profit|floatformat:-2 }}
+                </td>
                 <td>
                     <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
                         {% csrf_token %}
-                        <input type="hidden" name="stock_symbol" value={{stock.symbol}} />
+                        <input type="hidden" name="ticker" value={{userStock.ticker}}>
+                        <input type="hidden" name="stock_id" value={{userStock.pk}}>
+                        <input class="form-control mr-sm-2" type="add" placeholder="Buying Price" aria-label="Add" name="buying_price">
+                        <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
+                        <input name=buy_stock class="btn btn-outline-danger btn-sm" type="submit" value="Buy Stock">
+                </form>
+                </td>
+                <td>
+                    <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="ticker" value={{userStock.ticker}}>
+                        <input type="hidden" name="stock_id" value={{userStock.pk}}>
+                        <input class="form-control mr-sm-2" type="add" placeholder="Shares" aria-label="Add" name="quality">
+                        <input name=sell_stock class="btn btn-outline-danger btn-sm" type="submit" value="sell Stock">
+                </form>
+                </td>
+                <td>
+                    <form method="POST" action="{% url 'stocks:managePortfolio' portfolio.pk %}" class="form-inline my-2 my-lg-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="stock_symbol" value={{userStock.ticker}}>
+                        <input type="hidden" name="stock_id" value={{userStock.pk}}>
                         <input name=remove_stock class="btn btn-outline-danger btn-sm" type="submit" value="x">
                         
                     </form> 
@@ -102,3 +145,4 @@ Manage Portfolio
     {% endif %}
 
 {% endblock %}
+

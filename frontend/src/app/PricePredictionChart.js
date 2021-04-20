@@ -5,8 +5,8 @@ export default function PerformanceChartCopy(props) {
   const ref = React.useRef();
   useEffect(() => {
     let chart = createChart(ref.current, {
-      width: 800,
-      height: 400,
+      width: 900,
+      height: 500,
       rightPriceScale: {
         scaleMargins: {
           top: 0.2,

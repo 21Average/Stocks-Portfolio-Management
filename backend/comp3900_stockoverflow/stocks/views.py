@@ -17,6 +17,7 @@ from .price_prediction import prediction
 import pandas as pd
 # news sentiment
 from .news_sentiment import analyse_news_sentiment, predict_rating
+import decimal
 
 
 def search_stock(url, stock_ticker):
@@ -30,6 +31,18 @@ def search_stock(url, stock_ticker):
         data = {
             'Error': 'There was a problem with your provided ticker symbol. Please try again'}
 
+    return data
+
+
+def search_stock_price(ticker):
+    my_token = settings.IEXCLOUD_TEST_API_TOKEN
+    url = "https://sandbox.iexapis.com/stable/stock/" + ticker + "/quote/latestPrice?token=" + my_token
+    data = requests.get(url)
+
+    if data.status_code == 200:
+        data = json.loads(data.content)
+    else:
+        data = ''
     return data
 
 
@@ -115,14 +128,17 @@ def watchList_manage_form(request, portfolio_pk):
                         request, f'{ticker} has been added successfully.')
                     return HttpResponseRedirect("")
 
+                else:
+                    messages.warning(request, 'Please enter a valid ticker name.')
+                    return HttpResponseRedirect("")
+
         elif 'remove_stock' in request.POST:
             ticker = str(request.POST.get('stock_symbol')).lower()
             portfolio.stock_list.remove(ticker)
             portfolio.save()
+            stock_pk = request.POST.get('stock_id')
+            Stock.objects.filter(id=stock_pk).delete()
             return HttpResponseRedirect("")
-        messages.warning(request, 'Please enter a valid ticker name.')
-        return HttpResponseRedirect("")
-
     else:
         userStock = list(Stock.objects.filter(portfolio=portfolio_pk))
         stockdata = portfolio.stock_list
@@ -148,15 +164,21 @@ def portfolio_create_form(request):
     portfolio_list = Portfolio.objects.all()
     form = PortfolioCreateForm()
     if request.method == "POST":
-        form = PortfolioCreateForm(request.POST or None)
-        if form.is_valid():
-            form = form.save(commit=False)
-            # form.stock_list = [99]
-            form.save()
-            if form.ptype == "WatchList":
-                return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
-            elif form.ptype == "Portfolio":
-                return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
+        if 'add_portfolio' in request.POST:
+            form = PortfolioCreateForm(request.POST or None)
+            if form.is_valid():
+                form = form.save(commit=False)
+
+                form.save()
+                if form.ptype == "WatchList":
+                    return redirect(reverse('stocks:manageWatchList', args=[form.pk]))
+                elif form.ptype == "Portfolio":
+                    return redirect(reverse('stocks:managePortfolio', args=[form.pk]))
+
+        elif 'remove_portfolio' in request.POST:
+            portfolio_pk = request.POST.get('portfolio_pk')
+            Portfolio.objects.filter(id=portfolio_pk).delete()
+            return HttpResponseRedirect("")
 
     context = {
         'portfolio_list': portfolio_list,
@@ -170,11 +192,10 @@ def portfolio_manage_form(request, portfolio_pk):
     if request.method == 'POST':
 
         if 'add_stock' in request.POST:
-            ticker = request.POST['ticker']
+            ticker = (request.POST['ticker']).upper()
             quality = request.POST['quality']
             buying_price = request.POST['buying_price']
             form = PortfolioManageForm(request.POST or None)
-
             if form.is_valid():
 
                 if check_stock_ticker_existed(ticker, portfolio):
@@ -194,48 +215,85 @@ def portfolio_manage_form(request, portfolio_pk):
                     messages.success(
                         request, f'{ticker} has been added successfully.')
                     return HttpResponseRedirect("")
+                else:
+                    messages.warning(request, 'Please enter a valid ticker name.')
+                    return HttpResponseRedirect("")
 
         elif 'remove_stock' in request.POST:
-            ticker = str(request.POST.get('stock_symbol')).lower()
+            ticker = str(request.POST.get('stock_symbol'))
             portfolio.stock_list.remove(ticker)
             portfolio.save()
+            stock_pk = request.POST.get('stock_id')
+            Stock.objects.filter(id=stock_pk).delete()
             return HttpResponseRedirect("")
 
-        else:
-            messages.warning(request, 'Please enter a valid ticker name.')
+        elif 'buy_stock' in request.POST:
+            ticker = str(request.POST.get('ticker'))
+            quality = request.POST['quality']
+            buying_price = request.POST['buying_price']
+            int_quality = int(quality)
+            int_buying_price = '%.2f' % float(buying_price)
+            stock_pk = request.POST.get('stock_id')
+            stock = Stock.objects.filter(id=stock_pk).get()
+
+            if '%.2f' % stock.buying_price == int_buying_price:
+                newquality = stock.quality + int_quality
+                stock.quality = newquality
+                stock.save()
+            else:
+                form = PortfolioManageForm(request.POST or None)
+                if form.is_valid():
+                    form.ticker = ticker
+                    if check_valid_stock_ticker(ticker):
+                        if portfolio.stock_list:
+                            portfolio.stock_list.append(f'{ticker}')
+                        else:
+                            portfolio.stock_list = [f'{ticker}']
+                        portfolio.save()
+                        form = form.save(commit=False)
+                        form.portfolio = portfolio
+                        form.save()
+                        messages.success(
+                            request, f'{ticker} has been added successfully.')
             return HttpResponseRedirect("")
 
+        elif 'sell_stock' in request.POST:
+            ticker = str(request.POST.get('ticker'))
+            quality = request.POST['quality']
+            int_quality = int(quality)
+            stock_pk = request.POST.get('stock_id')
+            stock = Stock.objects.filter(id=stock_pk).get()
+
+            newquality = stock.quality - int_quality
+            stock.quality = newquality
+            stock.save()
+
+            return HttpResponseRedirect("")
 
     else:
         userStock = list(Stock.objects.filter(portfolio=portfolio_pk))
-        stockdata = portfolio.stock_list
+        stock_list = portfolio.stock_list
 
         if portfolio.stock_list:
             ticker_list = portfolio.stock_list
-
             tickers = ','.join(ticker_list)
             base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
-            stockdata = search_stock_batch(base_url, tickers)
-
-            df_news = analyse_news_sentiment(ticker_list)
-            json_records = df_news.reset_index().to_json(orient='records')
-            news_data = []
-            news_data = json.loads(json_records)
-            context = {
-                'stockdata': zip(stockdata, userStock),
-                'portfolio': portfolio,
-                'news_sentiment': news_data,
-                # 'user_stocks':user_stock
-            }
+            stock_list = search_stock_batch(base_url, tickers)
         else:
             messages.info(
                 request, 'Currently, there are no stocks in your portfolio!')
 
-            context = {
-                'stockdata': zip(stockdata, userStock),
-                'portfolio': portfolio,
-                # 'user_stocks':user_stock
-            }
+        for user_stock in userStock:
+            for stock in stock_list:
+                if stock['symbol'] == user_stock.ticker:
+                    user_stock.profit = (decimal.Decimal(
+                        stock['latestPrice']) - user_stock.buying_price) * user_stock.quality
+
+        context = {
+            'stockdata': userStock,
+            'portfolio': portfolio,
+            'stock_list': stock_list
+        }
         return render(request, 'stocks/managePortfolio.html', context)
 
 
@@ -274,6 +332,8 @@ def history_data(ticker, range='1d'):
 @permission_classes([IsAuthenticated])
 def create_portfolio(request):
     if request.method == "POST":
+        if Portfolio.objects.filter(name=request.data['name'], owner_id=request.user.id).exists():
+            return Response({'error': 'Portfolio name already taken!'}, status=HTTP_400_BAD_REQUEST)
         request.data['owner'] = request.user.id
         serialized = PortfolioSerializer(data=request.data)
         if serialized.is_valid():
@@ -332,10 +392,18 @@ def add_stock(request, portfolio_pk):
                 if portfolio.ptype == 'Transaction':
                     # Transaction stock: add to portfolio and save to db
                     request.data['portfolio'] = portfolio_pk
+                    stock_price = search_stock_price(ticker)
+                    buying_price = float(request.data["buying_price"])
+                    quantity = int(request.data["quality"])
+                    if not stock_price:
+                        return Response(stock_price, status=HTTP_400_BAD_REQUEST)
+                    request.data['profit'] = decimal.Decimal((float(stock_price) - buying_price) * quantity)
                     serializer = StockSerializer(data=request.data)
                     if serializer.is_valid():
                         serializer.save()
-                    return Response(serializer.data, status=HTTP_201_CREATED)
+                        return Response(serializer.data, status=HTTP_201_CREATED)
+                    else:
+                        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
                 return Response(status=HTTP_201_CREATED)
         return Response({"error": "Not a valid stock"}, status=HTTP_400_BAD_REQUEST)
 
@@ -421,6 +489,37 @@ def get_stock_prediction(request):
     return Response({"error": "Could not retrieve stock price prediction"}, status=HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_stock_share(request, portfolio_pk):
+    if request.method == "POST":
+        action = request.data['action']
+        ticker = request.data['ticker']
+        quantity = int(request.data['quantity'])
+        stock = Stock.objects.get(ticker=ticker, portfolio_id=portfolio_pk)
+        stock_price = search_stock_price(ticker)
+        if not stock_price:
+            return Response(stock_price, status=HTTP_400_BAD_REQUEST)
+        # update stock
+        if action == 'buy':
+            buying_price = float(request.data['buying_price'])
+            stock.quality += quantity
+            stock.buying_price = decimal.Decimal(buying_price)
+            print(stock.profit)
+            stock.profit += decimal.Decimal((float(stock_price) - buying_price) * quantity)
+        elif action == 'sell':
+            # TODO: fix profit calculation
+            if stock.quality >= quantity:
+                stock.quality -= quantity
+                stock.profit -= decimal.Decimal((float(stock_price)) * quantity)
+        else:
+            return Response({"error": "Invalid action. Needs to be 'buy' or 'sell'"}, status=HTTP_400_BAD_REQUEST)
+
+        stock.save()
+        return Response(status=HTTP_200_OK)
+    return Response({"error": "Failed to update stock"}, status=HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_stock_data(request, portfolio_pk):
@@ -444,7 +543,8 @@ def get_all_stock_data(request, portfolio_pk):
                         "previousClose": stock["previousClose"],
                         "changePercent": stock["changePercent"],
                         "quality": stock_db.quality,
-                        "buyingPrice": stock_db.buying_price
+                        "buyingPrice": stock_db.buying_price,
+                        "profit": stock_db.profit
                     })
             elif portfolio.ptype == 'Watchlist':
                 for stock in stock_data:
@@ -481,8 +581,10 @@ def delete_stock(request, portfolio_pk):
                 # delete from stock_list in Portfolio table
                 portfolio = Portfolio.objects.get(pk=portfolio_pk)
                 stock_list = portfolio.stock_list
+                print(stock_list)
                 if stock_list:
                     stock_list.remove(ticker)
+                    print(stock_list)
                     portfolio.save()
             return Response({"success": "Stock removed"}, status=HTTP_200_OK)
         return Response({"error": "Could not delete stocks"}, status=HTTP_400_BAD_REQUEST)

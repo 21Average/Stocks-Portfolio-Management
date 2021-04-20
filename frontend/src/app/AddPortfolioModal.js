@@ -32,8 +32,8 @@ export default class AddPortfolioModal extends Component {
         localStorage.setItem("p_name", data['name']);
         localStorage.setItem("p_type", data['ptype']);
         window.location.reload()
-      }).catch(({error}) => {
-        alert(error)
+      }).catch(({response}) => {
+        alert(response.data['error'])
       })
     }
   };
@@ -42,7 +42,7 @@ export default class AddPortfolioModal extends Component {
     const {openModal, ptype} = this.state;
     const portfolioTypes = [{name: 'Watchlist'}, {name: 'Transaction'}];
 
-    return (<Modal
+    return (<Modal size={'small'}
       open={openModal}
       trigger={<Button positive onClick={() => this.setState({openModal: true})}>Create Portfolio</Button>}>
       <Modal.Header>Add new portfolio</Modal.Header>

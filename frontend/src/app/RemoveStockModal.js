@@ -42,7 +42,7 @@ export default class RemoveStockModal extends Component {
   render() {
     const {openModal} = this.state;
     const {stockList} = this.props;
-    return (<Modal
+    return (<Modal size={'small'}
         open={openModal}
         trigger={<Button negative onClick={() => this.setState({openModal: true})}>Remove Stock</Button>}>
         <Modal.Header>Select a stock to remove</Modal.Header>

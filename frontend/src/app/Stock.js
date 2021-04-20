@@ -116,14 +116,14 @@ export default class Stock extends Component {
     let data, data2, percent, percentSymbol, percentColour;
     if (stockInfo) {
       data = [
-        {key: "Market Cap", value: this.numberWithCommas(stockInfo["marketCap"])},
+        {key: "Market Cap", value: `$${this.numberWithCommas(stockInfo["marketCap"])}`},
         {key: "PE Ratio", value: stockInfo["peRatio"]},
         {key: "Previous Close", value: `$${stockInfo["previousClose"]}`},
       ];
       data2 = [
         {key: "52 Week High", value: `$${stockInfo["week52High"]}`},
         {key: "52 Week Low", value: `$${stockInfo["week52Low"]}`},
-        {key: "YTD Change", value: stockInfo["ytdChange"] ? `${stockInfo["ytdChange"].toFixed(2)}%` : ''},
+        {key: "YTD Change", value: stockInfo["ytdChange"] ? `${(stockInfo["ytdChange"] * 100).toFixed(2)}%` : ''},
       ];
       percent = (stockInfo["changePercent"] * 100).toFixed(2);
       percentSymbol = percent > 0 ? '+' : '';
@@ -164,10 +164,8 @@ export default class Stock extends Component {
                 <Loader active>Calculating predictions...</Loader>}
             </Grid.Row>
             <Grid.Row>
-              {/*<Label.Group align={'center'}>*/}
               <Label color={'teal'} size={'large'}>Past performance</Label>
               <Label color={'yellow'} size={'large'}>Predicted prices</Label>
-              {/*</Label.Group>*/}
             </Grid.Row>
           </Grid>
         </Container>

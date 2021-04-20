@@ -44,7 +44,7 @@ export default class RemovePortfolioModal extends Component {
 
   render() {
     const {openModal, portfolioList} = this.state;
-    return (<Modal
+    return (<Modal size={'small'}
         open={openModal}
         trigger={<Button negative onClick={() => this.setState({openModal: true})}>Remove Portfolio</Button>}>
         <Modal.Header>Remove portfolio</Modal.Header>

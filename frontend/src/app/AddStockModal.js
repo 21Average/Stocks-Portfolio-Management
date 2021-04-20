@@ -44,7 +44,7 @@ export default class AddStockModal extends Component {
   render() {
     const {openModal} = this.state;
 
-    return (<Modal
+    return (<Modal size={'small'}
       open={openModal}
       trigger={<Button positive onClick={() => this.setState({openModal: true})}>Add Stock</Button>}>
       <Modal.Header>Add new stock</Modal.Header>
