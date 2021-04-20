@@ -18,7 +18,10 @@ export default class Portfolio extends Component {
     showNoStockMsg: false,
     isLoading: false,
     isTableLoading: false,
-    portfolioSelected: false
+    portfolioSelected: false,
+    portfolioValue: 0,
+    todayGainLoss: 0,
+    totalGainLoss: 0
   };
 
   componentDidMount() {
@@ -47,6 +50,31 @@ export default class Portfolio extends Component {
       });
     }
   }
+
+  calculatePortfolioValue = (data) => {
+    let portfolioValue = 0;
+    data.forEach(({latestPrice, quality}) => {
+      portfolioValue += (latestPrice * quality)
+    });
+    this.setState({portfolioValue})
+  };
+
+  calculateTodayGainLoss = (data) => {
+    let todayGainLoss = 0;
+    data.forEach(({latestPrice, previousClose, quality}) => {
+      todayGainLoss += ((latestPrice - previousClose) * quality)
+    });
+    this.setState({todayGainLoss})
+  };
+
+
+  calculateTotalGainLoss = (data) => {
+    let totalGainLoss = 0;
+    data.forEach(({profit}) => {
+      totalGainLoss += profit
+    });
+    this.setState({totalGainLoss})
+  };
 
   loadDefaultPortfolio = (pID) => {
     this.setState({isTableLoading: true});
@@ -81,13 +109,23 @@ export default class Portfolio extends Component {
       method: 'get', url: `${BACKEND_URL}/stocks/${pID}/getStocks/`
     }).then(({data}) => {
       this.setState({pData: data, portfolioSelected: true, isTableLoading: false});
+      this.calculatePortfolioValue(data);
+      this.calculateTodayGainLoss(data);
+      this.calculateTotalGainLoss(data);
     }).catch(({response}) => {
       this.setState({showNoStockMsg: true, portfolioSelected: true, isTableLoading: false});
     });
   };
 
+  numberWithComma = (x) => {
+    return x ? x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '-'
+  };
+
   render() {
-    const {pID, pName, pType, pData, pOptions, isLoading, isTableLoading, portfolioSelected} = this.state;
+    const {pID, pName, pType, pData, pOptions, isLoading, isTableLoading, portfolioSelected, portfolioValue, todayGainLoss, totalGainLoss} = this.state;
+
+    let getColor = (value) => value >= 0 ? (value > 0 ? 'green' : null) : 'red';
+    let getSymbol = (value) => value > 0 ? '+' : '';
 
     return <React.Fragment>
       <NavBar/>
@@ -101,7 +139,8 @@ export default class Portfolio extends Component {
                             onChange={this.handleChangePortfolio} defaultValue={`${pID}:${pName}:${pType}`}/>
                 </Grid.Column>
                 <Grid.Column align={'right'}>
-                  <Button icon labelPosition={'right'} onClick={() => history.push('/portfolio/all')}><Icon name='right arrow'/>View all portfolios</Button>
+                  <Button icon labelPosition={'right'} onClick={() => history.push('/portfolio/all')}><Icon
+                    name='right arrow'/>View all portfolios</Button>
                 </Grid.Column>
               </Grid>
               <Header as='h1'>{pName}<Header.Subheader>{pType}</Header.Subheader></Header>
@@ -113,13 +152,18 @@ export default class Portfolio extends Component {
                       <br/>
                       <Grid columns={3}>
                         <Grid.Column>
-                          <Header><Header.Subheader>Portfolio Value: </Header.Subheader>$--</Header>
+                          <Header><Header.Subheader>Portfolio
+                            Value: </Header.Subheader>${this.numberWithComma(portfolioValue.toFixed(2))}</Header>
                         </Grid.Column>
                         <Grid.Column>
-                          <Header color={'green'}><Header.Subheader>Today's Gain/Loss: </Header.Subheader>-- (--%)</Header>
+                          <Header color={getColor(todayGainLoss)}><Header.Subheader>Today's Gain/Loss ($):
+                          </Header.Subheader>{getSymbol(todayGainLoss)}{this.numberWithComma(todayGainLoss.toFixed(2))}
+                          </Header>
                         </Grid.Column>
                         <Grid.Column>
-                          <Header color={'green'}><Header.Subheader>Total Gain/Loss: </Header.Subheader>-- (--%)</Header>
+                          <Header color={getColor(totalGainLoss)}><Header.Subheader>Total Gain/Loss ($):
+                          </Header.Subheader>{getSymbol(totalGainLoss)}{this.numberWithComma(totalGainLoss.toFixed(2))}
+                          </Header>
                         </Grid.Column>
                       </Grid>
                       <br/>

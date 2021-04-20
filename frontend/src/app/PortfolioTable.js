@@ -19,11 +19,8 @@ export default class PortfolioTable extends Component {
     this.setState({stockList, pData})
   }
 
-  numberWithCommas = (x) => {
-    if (x) {
-      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-    return ''
+  numberWithComma = (x) => {
+    return x ? x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ''
   };
 
   render() {
@@ -40,10 +37,10 @@ export default class PortfolioTable extends Component {
         <Table.Cell>
           <Link to={{pathname: `/stock/${symbol}`, state: {pType: pType, name: companyName}}}>{companyName}</Link>
         </Table.Cell>
-        <Table.Cell>${latestPrice ? latestPrice.toFixed(2) : '-'}</Table.Cell>
-        <Table.Cell>${buyingPrice ? buyingPrice.toFixed(2) : '-'}</Table.Cell>
-        <Table.Cell>{quality ? this.numberWithCommas(quality): '-'}</Table.Cell>
-        <Table.Cell><p style={{color: profitColour}}>{profit > 0 ? '+' : ''}{this.numberWithCommas(profit.toFixed(2))}</p></Table.Cell>
+        <Table.Cell>${latestPrice ? this.numberWithComma(latestPrice.toFixed(2)) : '-'}</Table.Cell>
+        <Table.Cell>${buyingPrice ? this.numberWithComma(buyingPrice.toFixed(2)) : '-'}</Table.Cell>
+        <Table.Cell>{quality ? this.numberWithComma(quality): '-'}</Table.Cell>
+        <Table.Cell><p style={{color: profitColour}}>{profit > 0 ? '+' : ''}{this.numberWithComma(profit.toFixed(2))}</p></Table.Cell>
         <Table.Cell collapsing><UpdateStockModal stock={pData[i]} pID={pID}/></Table.Cell>
       </Table.Row>
     }) : pData.map(({symbol, companyName, latestPrice, previousClose, changePercent, marketCap, ytdChange, peRatio, week52Low, week52High}, i) => {
@@ -55,13 +52,13 @@ export default class PortfolioTable extends Component {
         <Table.Cell>
           <Link to={{pathname: `/stock/${symbol}`, state: {pType: pType}}}>{companyName}</Link>
         </Table.Cell>
-        <Table.Cell>${latestPrice ? latestPrice : '-'}</Table.Cell>
-        <Table.Cell>${previousClose ? previousClose.toFixed(2) : '-'}</Table.Cell>
+        <Table.Cell>${latestPrice ? this.numberWithComma(latestPrice.toFixed(2)) : '-'}</Table.Cell>
+        <Table.Cell>${previousClose ? this.numberWithComma(previousClose.toFixed(2)) : '-'}</Table.Cell>
         <Table.Cell>{changePercent ? <p style={{color: percentColour}}>{percentSymbol}{percent}%</p> : '-'}</Table.Cell>
         <Table.Cell>{ytdChange ? (ytdChange * 100).toFixed(2) : '-'}%</Table.Cell>
         <Table.Cell>{peRatio ? peRatio : '-'}</Table.Cell>
-        <Table.Cell>${week52Low ? week52Low : '-'}</Table.Cell>
-        <Table.Cell>${week52High ? week52High : '-'}</Table.Cell>
+        <Table.Cell>${week52Low ? this.numberWithComma(week52Low.toFixed(2)) : '-'}</Table.Cell>
+        <Table.Cell>${week52High ? this.numberWithComma(week52High.toFixed(2)) : '-'}</Table.Cell>
       </Table.Row>
     });
 

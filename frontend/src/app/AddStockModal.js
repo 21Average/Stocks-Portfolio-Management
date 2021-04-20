@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Button, Form, Modal, Container} from "semantic-ui-react";
+import {Button, Form, Modal, Container, Message} from "semantic-ui-react";
 import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL, STOCK_OPTIONS} from "../defaults";
 import VirtualizedSelect from 'react-virtualized-select'
@@ -13,40 +13,48 @@ export default class AddStockModal extends Component {
     name: '',
     price: '',
     quantity: '',
-    openModal: false
+    openModal: false,
+    showError: false,
   };
 
-  handleChange = (e, {name, value}) => {
-    this.setState({[name]: value});
-  };
-
+  handleChange = (e, {name, value}) => this.setState({[name]: value, showError: false});
   handleClose = () => this.setState({openModal: false});
+  checkValues = (price, quantity) => {
+    if (price && quantity) {
+      if (!isNaN(parseFloat(price)) && !isNaN(parseFloat(quantity))) {
+        return true
+      }
+    }
+    this.setState({showError: true});
+    return false
+  };
 
   handleAdd = () => {
     const {name, price, quantity} = this.state;
     const token = localStorage.getItem("token");
-    if (token) {
-      axios({
-        headers: AXIOS_HEADER(token),
-        method: 'post', url: `${BACKEND_URL}/stocks/${this.props.pID}/addStock/`,
-        data: {'ticker': name, 'buying_price': price, 'quality': quantity}
-      }).then(() => {
-        localStorage.setItem("p_id", this.props.pID);
-        localStorage.setItem("p_name", this.props.pName);
-        localStorage.setItem("p_type", this.props.pType);
-        window.location.reload();
-      }).catch(({response}) => {
-        alert("Oops! " + response.data['error'])
-      })
+    if (this.checkValues(price, quantity)) {
+      if (token) {
+        axios({
+          headers: AXIOS_HEADER(token),
+          method: 'post', url: `${BACKEND_URL}/stocks/${this.props.pID}/addStock/`,
+          data: {'ticker': name, 'buying_price': price, 'quality': quantity}
+        }).then(() => {
+          localStorage.setItem("p_id", this.props.pID);
+          localStorage.setItem("p_name", this.props.pName);
+          localStorage.setItem("p_type", this.props.pType);
+          window.location.reload();
+        }).catch(({response}) => {
+          alert("Oops! " + response.data['error'])
+        })
+      }
     }
   };
 
   render() {
-    const {openModal} = this.state;
+    const {openModal, showError} = this.state;
 
-    return (<Modal size={'small'}
-      open={openModal}
-      trigger={<Button positive onClick={() => this.setState({openModal: true})}>Add Stock</Button>}>
+    return (<Modal size={'small'} open={openModal} trigger={
+      <Button positive onClick={() => this.setState({openModal: true})}>Add Stock</Button>}>
       <Modal.Header>Add new stock</Modal.Header>
       <Modal.Content>
         {this.props.pType === 'Transaction' ? <Container>
@@ -59,14 +67,15 @@ export default class AddStockModal extends Component {
               <Form.Group widths={'equal'}>
                 <Form.Input label={'Buying price'} placeholder={'round to 2 decimal places'} name={'price'}
                             onChange={this.handleChange}/>
-                <Form.Input label={'Quantity'} name={'quantity'} onChange={this.handleChange}/>
+                <Form.Input label={'Quantity'} name={'quantity'} input={'number'} min={1} onChange={this.handleChange}/>
               </Form.Group>
+              {showError && <Message negative>Please enter a valid price, quantity and fee value</Message>}
             </Form>
           </Container> :
           <VirtualizedSelect
             options={STOCK_OPTIONS}
             placeholder={'Select stock symbol'}
-            onChange={(selected) => this.setState({name: selected ? selected['value'] : ''})}
+            onChange={(selected) => this.setState({showError: false, name: selected ? selected['value'] : ''})}
             value={this.state.name}/>}
       </Modal.Content>
       <Modal.Actions>

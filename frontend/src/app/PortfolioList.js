@@ -2,7 +2,6 @@ import React, {Component} from "react";
 import {Segment, Header, Table, Container, Divider, Grid, Button} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import AddPortfolioModal from "./AddPortfolioModal";
-import EditPortfolioModal from "./EditPortfolioModal";
 import RemovePortfolioModal from "./RemovePortfolioModal";
 import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
@@ -11,8 +10,6 @@ import history from "../history";
 export default class PortfolioList extends Component {
   state = {
     portfolioList: [],
-    openEditModal: false,
-    selectedPortfolio: {},
     portfoliosToRemove: [],
     isLoading: false,
   };
@@ -25,7 +22,6 @@ export default class PortfolioList extends Component {
         headers: AXIOS_HEADER(token),
         method: 'get', url: `${BACKEND_URL}/stocks/getPortfolios/`
       }).then(({data}) => {
-        data.forEach((o) => o['value'] = "$14590.20");
         this.setState({portfolioList: data, isLoading: false})
       }).catch(({error}) => {
         alert(error)
@@ -33,24 +29,19 @@ export default class PortfolioList extends Component {
     }
   }
 
-  handleEditPortfolio = (i) => {
-    // open modal
+  selectPortfolio = (i) => {
     const {portfolioList} = this.state;
     if (portfolioList[i]) {
-      this.setState({
-        openEditModal: true,
-        selectedPortfolio: portfolioList[i]
-      })
-    } else {
-      alert('Something went wrong')
+      localStorage.setItem("p_id", portfolioList[i]["id"]);
+      localStorage.setItem("p_name", portfolioList[i]["name"]);
+      localStorage.setItem("p_type", portfolioList[i]["ptype"]);
+      history.push('/portfolio');
     }
   };
-  handleClose = () => this.setState({openEditModal: false});
 
   render() {
-    const {portfolioList, selectedPortfolio, openEditModal, isLoading} = this.state;
-    // These are sample headers for the table. We can change this depending on the data we get from the backend
-    const headerRow = ['Name', 'Type', 'Description', 'Total Value'];
+    const {portfolioList, isLoading} = this.state;
+    const headerRow = ['Name', 'Type', 'Description'];
 
     return <React.Fragment>
       <NavBar/>
@@ -60,12 +51,10 @@ export default class PortfolioList extends Component {
                   onClick={() => history.push('/portfolio')}/>
           <Header align={'center'} as={'h1'}>Portfolios</Header>
           <Divider section/>
-          {openEditModal ?
-            <EditPortfolioModal open={openEditModal} onClose={this.handleClose} selected={selectedPortfolio}/> : null}
           {isLoading ? null : <Container>
             {portfolioList && portfolioList.length > 0 ? <Grid textAlign={'center'}>
               <Grid.Row>
-                <Table color={'teal'}>
+                <Table color={'teal'} selectable>
                   <Table.Header>
                     <Table.Row>
                       {headerRow.map((header, i) =>
@@ -73,12 +62,11 @@ export default class PortfolioList extends Component {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {portfolioList.map(({name, ptype, desc, value}, i) =>
-                      <Table.Row key={i} onClick={() => this.handleEditPortfolio(i)}>
+                    {portfolioList.map(({name, ptype, desc}, i) =>
+                      <Table.Row key={i} onClick={() => this.selectPortfolio(i)}>
                         <Table.Cell>{name}</Table.Cell>
                         <Table.Cell>{ptype}</Table.Cell>
                         <Table.Cell>{desc}</Table.Cell>
-                        <Table.Cell><p style={{color: 'green'}}>{value}</p></Table.Cell>
                       </Table.Row>)}
                   </Table.Body>
                 </Table>

@@ -7,8 +7,6 @@ import Dashboard from "./app/Dashboard";
 import Portfolio from "./app/Portfolio";
 import PortfolioList from "./app/PortfolioList";
 import Stock from "./app/Stock";
-// import Recommendations from "./app/Recommendations";
-// import News from "./app/News";
 import Settings from "./app/Settings";
 import history from "./history";
 
@@ -35,11 +33,6 @@ export default class App extends Component {
       }, {
         path: '/stock/:symbol', component: Stock
       },
-      // {
-      //   path: '/recommendations', component: Recommendations
-      // }, {
-      //   path: '/news', component: News
-      // },
       {
         path: '/settings', component: Settings
       }, {

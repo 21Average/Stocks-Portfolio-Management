@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {createChart} from 'lightweight-charts';
 
-export default function PerformanceChartCopy(props) {
+export default function PricePredictionChart(props) {
   const ref = React.useRef();
   useEffect(() => {
     let chart = createChart(ref.current, {

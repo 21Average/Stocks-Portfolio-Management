@@ -12,13 +12,15 @@ export default class Stock extends Component {
   state = {
     symbol: '',
     name: '',
-    activeItem: 'past performance', // need a better name?
+    activeItem: 'historical data',
     lastUpdated: '',
     stockInfo: {},
     stockHistory: {},
     stockPrediction: {},
     rangeSelected: '6m',
-    isStockLoading: false
+    isStockLoading: false,
+    showError: false,
+    errorMsg: ''
   };
 
   componentDidMount() {
@@ -42,8 +44,9 @@ export default class Stock extends Component {
         data: {'ticker': symbol}
       }).then(({data}) => {
         this.setState({stockPrediction: data})
-      }).catch(({response}) => {
-        alert("Oops! " + response.data['error'])
+      }).catch(() => {
+        this.setState({showError: true, errorMsg: "Price prediction currently not available", stockPrediction: {}})
+
       });
       axios({
         headers: AXIOS_HEADER(token),
@@ -51,25 +54,20 @@ export default class Stock extends Component {
         data: {'ticker': symbol, 'range': rangeSelected}
       }).then(({data}) => {
         this.setState({stockHistory: data})
-      }).catch(({response}) => {
-        alert("Oops! " + response.data['error'])
+      }).catch(() => {
+        this.setState({showError: true, errorMsg: "Historical data currently not available", stockHistory: {}})
       });
     }
     this.setState({symbol, lastUpdated: date.toLocaleString('en-AU')});
   }
 
-  numberWithCommas = (x) => {
-    if (x) {
-      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-    } else {
-      return ''
-    }
+  numberWithComma = (x) => {
+    return x ? x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ''
   };
 
   handleItemClick = (e, {name}) => this.setState({activeItem: name});
 
   refreshInfo = () => {
-    // TODO: refresh page with stock info
     const {symbol} = this.state;
     this.setState({isStockLoading: true});
     const token = localStorage.getItem("token");
@@ -111,31 +109,31 @@ export default class Stock extends Component {
   };
 
   render() {
-    const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, rangeSelected, isStockLoading} = this.state;
+    const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, rangeSelected, isStockLoading, showError, errorMsg} = this.state;
     const intervals = ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y'];
     let data, data2, percent, percentSymbol, percentColour;
     if (stockInfo) {
       data = [
-        {key: "Market Cap", value: `$${this.numberWithCommas(stockInfo["marketCap"])}`},
-        {key: "PE Ratio", value: stockInfo["peRatio"]},
-        {key: "Previous Close", value: `$${stockInfo["previousClose"]}`},
+        {key: "Market Cap", value: stockInfo["marketCap"] ? `$${this.numberWithComma(stockInfo["marketCap"])}` : '-'},
+        {key: "PE Ratio", value: stockInfo["peRatio"] ? stockInfo["peRatio"] : '-'},
+        {key: "Previous Close", value: stockInfo["previousClose"] ? `$${stockInfo["previousClose"]}` : '-'},
       ];
       data2 = [
-        {key: "52 Week High", value: `$${stockInfo["week52High"]}`},
-        {key: "52 Week Low", value: `$${stockInfo["week52Low"]}`},
-        {key: "YTD Change", value: stockInfo["ytdChange"] ? `${(stockInfo["ytdChange"] * 100).toFixed(2)}%` : ''},
+        {key: "52 Week High", value: stockInfo["week52High"] ? `$${stockInfo["week52High"].toFixed(2)}` : '-'},
+        {key: "52 Week Low", value: stockInfo["week52Low"] ? `$${stockInfo["week52Low"].toFixed(2)}` : '-'},
+        {key: "YTD Change", value: stockInfo["ytdChange"] ? `${(stockInfo["ytdChange"] * 100).toFixed(2)}%` : '-'},
       ];
       percent = (stockInfo["changePercent"] * 100).toFixed(2);
       percentSymbol = percent > 0 ? '+' : '';
-      percentColour = percent >= 0 ? (percent > 0 ? 'green' : '') : 'red';
+      percentColour = percent >= 0 ? (percent > 0 ? 'green' : null) : 'red';
     }
 
-    // past performance, related news, price prediction
+    // historical data, related news, price prediction
     let view = (display) => {
-      if (display === 'past performance') {
+      if (display === 'historical data') {
         return <Container align={'center'}>
-          <Header as={'h3'}>Past Performance</Header>
-          <Grid columns={2} style={{minHeight: "530px"}}>
+          <Header as={'h3'}>Historical Data</Header>
+          {showError ? <p style={{color: 'grey'}}>{errorMsg}</p> : <Grid columns={2} style={{minHeight: "530px"}}>
             <Grid.Column align={'right'} verticalAlign={'middle'} width={2}>
               {intervals.map((interval, i) => <p key={i}><Button
                 style={{width: '70px'}} name={interval} color={rangeSelected === interval ? 'teal' : null}
@@ -147,27 +145,27 @@ export default class Stock extends Component {
                 <PerformanceChart closeData={stockHistory["close_data"]}
                                   volumeData={stockHistory["volume_data"]}/> : <Loader active/>}
             </Grid.Column>
-          </Grid>
+          </Grid>}
         </Container>
       } else if (display === 'related news') {
         return <Container align={'center'}>
           <Header>Related News</Header>
         </Container>
       } else if (display === 'price prediction') {
-        return <Container>
-          <Header as={'h3'} align={'center'}>Price Prediction</Header>
-          <Grid centered>
+        return <Container align={'center'}>
+          <Header as={'h3'}>Price Prediction</Header>
+          {showError ? <p style={{color: 'grey'}}>{errorMsg}</p> : <Grid centered>
             <Grid.Row style={{minHeight: '430px'}}>
               {stockPrediction && stockPrediction["close_data"] && stockPrediction["prediction_data"] ?
                 <PricePredictionChart closeData={stockPrediction["close_data"]}
                                       predictionData={stockPrediction["prediction_data"]}/> :
                 <Loader active>Calculating predictions...</Loader>}
-            </Grid.Row>
+            </Grid.Row>}
             <Grid.Row>
-              <Label color={'teal'} size={'large'}>Past performance</Label>
+              <Label color={'teal'} size={'large'}>Historical data</Label>
               <Label color={'yellow'} size={'large'}>Predicted prices</Label>
             </Grid.Row>
-          </Grid>
+          </Grid>}
         </Container>
       }
     };
@@ -198,7 +196,7 @@ export default class Stock extends Component {
                     {data.map(({key, value}, i) =>
                       <Table.Row key={i}>
                         <Table.Cell collapsing>{key}</Table.Cell>
-                        <Table.Cell><b>{value ? value : '-'}</b></Table.Cell>
+                        <Table.Cell><b>{value}</b></Table.Cell>
                       </Table.Row>
                     )}
                   </Table.Body>
@@ -230,9 +228,9 @@ export default class Stock extends Component {
             <Divider hidden/>
             <Menu pointing secondary>
               <Menu.Item
-                name='past performance'
+                name='historical data'
                 icon='chart bar outline'
-                active={activeItem === 'past performance'}
+                active={activeItem === 'historical data'}
                 onClick={this.handleItemClick}
               />
               <Menu.Item

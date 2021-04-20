@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Segment, Container, Divider, Button, Header, Form, Table, Grid, Modal, Message} from "semantic-ui-react";
+import {Segment, Container, Divider, Button, Header, Form, Modal, Grid, Message} from "semantic-ui-react";
 import history from "../history";
 import NavBar from "./NavBar";
 import axios from "axios";
@@ -13,9 +13,6 @@ export default class Settings extends Component {
     interests: '',
     showSuccessMsg: false,
     showBadPasswordMsg: false,
-    selectedAlert: {},
-    alertData: [],
-    openAlertModal: false,
   };
 
   componentDidMount() {
@@ -60,8 +57,6 @@ export default class Settings extends Component {
         this.setState({showSuccessMsg: true});
         this.setState({showBadPasswordMsg: false});
       }).catch(() => {
-        // This is a minor hack
-        // Can't think of anything right now that will trigger an error except an existing email being used
         alert("Email already taken")
       });
     }
@@ -74,21 +69,12 @@ export default class Settings extends Component {
     this.setState({showBadPasswordMsg: false});
   };
 
-  editAlert = (i) => {
-    const {alertData} = this.state;
-    if (alertData[i]) {
-      this.setState({openAlertModal: true, selectedAlert: alertData[i]})
-    }
-  };
-
   handleCloseModal = () => {
     this.setState({openAlertModal: false});
   };
 
   render() {
-    const {firstName, lastName, email, interests, showSuccessMsg, showBadPasswordMsg, alertData, openAlertModal, selectedAlert} = this.state;
-    // These are sample headers for the table. We can change this depending on the data we get from the backend
-    const headerRow = ['Stock', 'Price'];
+    const {firstName, lastName, email, showSuccessMsg, showBadPasswordMsg, openAlertModal, selectedAlert} = this.state;
 
     return <React.Fragment>
       <NavBar/>
@@ -113,7 +99,7 @@ export default class Settings extends Component {
         <Segment className={'portfolio'}>
           <Grid columns={2}>
             <Grid.Column>
-              <Header as={'h1'}>Profile</Header>
+              <Header as={'h1'}>Settings</Header>
             </Grid.Column>
             <Grid.Column align={'right'}>
               <Button size='large' icon={'chevron right'} labelPosition={'right'} content={'Logout'} onClick={() => {
@@ -131,41 +117,19 @@ export default class Settings extends Component {
             </Form.Group>
             <Form.Group widths={'equal'}>
               <Form.Input label={'Email'} name={'email'} defaultValue={email} onChange={this.handleChange}/>
-              <Form.Input label={'Password'} name={'password'} type={'password'} onChange={this.handleChange}/>
+              <Form.Input label={'Password'} name={'password'} placeholder={'Enter new password'} type={'password'} onChange={this.handleChange}/>
             </Form.Group>
             {showBadPasswordMsg ?
               <Message negative onDismiss={this.handleDismissBadPw}>Password must have at least 8
                 characters</Message> : null}
-            <Form.Input label={'Interests'} name={'interests'} defaultValue={interests ? interests : ''}
-                        placeholder={'Enter your interests separated by a comma'} onChange={this.handleChange}/>
+            {/*<Form.Input label={'Interests'} name={'interests'} defaultValue={interests ? interests : ''}*/}
+            {/*            placeholder={'Enter your interests separated by a comma'} onChange={this.handleChange}/>*/}
             {showSuccessMsg ?
               <Message positive onDismiss={this.handleDismissSuccess}>Profile updated successfully!</Message> : null}
             <Form.Button color='green' size='large' onClick={this.handleClick}>Save changes</Form.Button>
           </Form>
         </Segment>
         <Divider hidden/>
-
-        <Segment className={'portfolio'}>
-          <Header as={'h1'}>Alerts</Header>
-          <Table color={'teal'} selectable>
-            <Table.Header>
-              <Table.Row>
-                {headerRow.map((header, i) =>
-                  <Table.HeaderCell key={i}>{header}</Table.HeaderCell>
-                )}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {alertData.map(({name, price}, i) =>
-                <Table.Row key={i} onClick={() => this.editAlert(i)}>
-                  <Table.Cell>{name}</Table.Cell>
-                  <Table.Cell>{price}</Table.Cell>
-                </Table.Row>)}
-            </Table.Body>
-          </Table>
-          <Button color={'green'}>Add Alert</Button>
-          <Button color={'red'}>Remove Alert</Button>
-        </Segment>
       </Container>
     </React.Fragment>
   }

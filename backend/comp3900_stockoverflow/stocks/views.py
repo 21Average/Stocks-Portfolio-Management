@@ -393,11 +393,12 @@ def add_stock(request, portfolio_pk):
                     # Transaction stock: add to portfolio and save to db
                     request.data['portfolio'] = portfolio_pk
                     stock_price = search_stock_price(ticker)
-                    buying_price = float(request.data["buying_price"])
+                    buying_price = decimal.Decimal(request.data["buying_price"])
                     quantity = int(request.data["quality"])
                     if not stock_price:
                         return Response(stock_price, status=HTTP_400_BAD_REQUEST)
-                    request.data['profit'] = decimal.Decimal((float(stock_price) - buying_price) * quantity)
+                    request.data['profit'] = round(
+                        ((decimal.Decimal(stock_price) - buying_price) * quantity), 2)
                     serializer = StockSerializer(data=request.data)
                     if serializer.is_valid():
                         serializer.save()
@@ -439,7 +440,10 @@ def get_stock_history(request):
         time_interval = request.data['range']
         # only send date, close, volume
         close_data, volume_data, data = [], [], {}
-        history = history_data(ticker=request.data['ticker'], range=time_interval)
+        try:
+            history = history_data(ticker=request.data['ticker'], range=time_interval)
+        except Exception:
+            return Response({"error": "Could not retrieve stock history"}, status=HTTP_400_BAD_REQUEST)
         for i, value in enumerate(history):
             close_data.append({
                 "time": value["date"],
@@ -474,7 +478,10 @@ def get_stock_prediction(request):
                 "time": h["date"],
                 "value": h["close"],
             })
-        price_prediction = prediction(history)
+        try:
+            price_prediction = prediction(history)
+        except IndexError:
+            return Response({"error": "Could not retrieve stock price prediction"}, status=HTTP_400_BAD_REQUEST)
         for i, p in enumerate(price_prediction):
             curr_date = datetime.now().date() + timedelta(days=i)
             prediction_data.append({
@@ -501,22 +508,21 @@ def update_stock_share(request, portfolio_pk):
         if not stock_price:
             return Response(stock_price, status=HTTP_400_BAD_REQUEST)
         # update stock
-        if action == 'buy':
-            buying_price = float(request.data['buying_price'])
-            stock.quality += quantity
-            stock.buying_price = decimal.Decimal(buying_price)
-            print(stock.profit)
-            stock.profit += decimal.Decimal((float(stock_price) - buying_price) * quantity)
-        elif action == 'sell':
-            # TODO: fix profit calculation
-            if stock.quality >= quantity:
-                stock.quality -= quantity
-                stock.profit -= decimal.Decimal((float(stock_price)) * quantity)
+        if action:
+            if action == 'buy':
+                new_buying_price = decimal.Decimal(request.data['buying_price'])
+                new_quantity = stock.quality + quantity
+                stock.quality += new_quantity
+                stock.buying_price = new_buying_price
+                stock.profit = round(((decimal.Decimal(stock_price) - new_buying_price) * new_quantity), 2)
+            elif action == 'sell':
+                new_quantity = stock.quality - quantity
+                stock.quality = new_quantity
+                stock.profit = round(((decimal.Decimal(stock_price) - stock.buying_price) * new_quantity), 2)
+            stock.save()
+            return Response(status=HTTP_200_OK)
         else:
             return Response({"error": "Invalid action. Needs to be 'buy' or 'sell'"}, status=HTTP_400_BAD_REQUEST)
-
-        stock.save()
-        return Response(status=HTTP_200_OK)
     return Response({"error": "Failed to update stock"}, status=HTTP_400_BAD_REQUEST)
 
 
@@ -534,8 +540,11 @@ def get_all_stock_data(request, portfolio_pk):
             data = []
             if portfolio.ptype == 'Transaction':
                 for stock in stock_data:
-                    # get data from db and combine, then send to front-end
+                    # get data from db and combine with data pulled from api
                     stock_db = Stock.objects.get(ticker=stock['symbol'], portfolio_id=portfolio_pk)
+                    # re-calculate profit from stock's latest price
+                    profit = round(((decimal.Decimal(stock["latestPrice"]) - stock_db.buying_price) * stock_db.quality),
+                                   2)
                     data.append({
                         "symbol": stock["symbol"],
                         "companyName": stock["companyName"],
@@ -544,7 +553,7 @@ def get_all_stock_data(request, portfolio_pk):
                         "changePercent": stock["changePercent"],
                         "quality": stock_db.quality,
                         "buyingPrice": stock_db.buying_price,
-                        "profit": stock_db.profit
+                        "profit": profit
                     })
             elif portfolio.ptype == 'Watchlist':
                 for stock in stock_data:
