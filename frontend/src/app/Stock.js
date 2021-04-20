@@ -6,20 +6,29 @@ import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
 import PerformanceChart from "./PerformanceChart";
 import PricePredictionChart from "./PricePredictionChart";
+import Display from "./Display.js";
+import './Display.css';
 
 
 export default class Stock extends Component {
-  state = {
-    symbol: '',
-    name: '',
-    activeItem: 'past performance', // need a better name?
-    lastUpdated: '',
-    stockInfo: {},
-    stockHistory: {},
-    stockPrediction: {},
-    rangeSelected: '6m',
-    isStockLoading: false
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      symbol: '',
+      name: '',
+      activeItem: 'past performance', // need a better name?
+      lastUpdated: '',
+      stockInfo: {},
+      stockHistory: {},
+      stockPrediction: {},
+      rangeSelected: '6m',
+      isStockLoading: false,
+      newsdata: [],
+      newscount: 0,
+      newsvalue: this.props.default
+    };
+    this.apiUrl = `https://newsapi.org/v2/sources?language=en&apiKey=3d49ef572f9047e8bd276fb0d3b540ef`;
+  }
 
   componentDidMount() {
     const {symbol} = this.props.match.params;
@@ -110,6 +119,19 @@ export default class Stock extends Component {
     }
   };
 
+  // Lifecycle method
+  componentWillMount() {
+    // Make HTTP reques with Axios
+    axios.get(this.apiUrl).then(res => {
+      // Set state with result
+      this.setState({ data: res.data.sources });
+      this.setState({ count: res.data.sources.length });
+      //console.log(this.state.data);
+      console.log(this.state.value);
+    });
+  }
+
+
   render() {
     const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, rangeSelected, isStockLoading} = this.state;
     const intervals = ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y'];
@@ -152,6 +174,7 @@ export default class Stock extends Component {
       } else if (display === 'related news') {
         return <Container align={'center'}>
           <Header>Related News</Header>
+          <Display default={this.state.value} />
         </Container>
       } else if (display === 'price prediction') {
         return <Container>
