@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Segment, Container, Header, Table, Divider, Loader, Card, Image} from "semantic-ui-react";
+import {Segment, Container, Header, Table, Divider, Card, Image} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
@@ -42,7 +42,6 @@ export default class Dashboard extends Component {
   render() {
     const {portfolioData, data, articles} = this.state;
     const headerRow = ['Portfolio', 'Total Gain/Loss', 'Number of Stocks'];
-    console.log(data);
 
     return <React.Fragment>
       <NavBar/>

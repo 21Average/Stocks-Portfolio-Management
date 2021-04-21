@@ -7,8 +7,11 @@ import Dashboard from "./app/Dashboard";
 import Portfolio from "./app/Portfolio";
 import PortfolioList from "./app/PortfolioList";
 import Stock from "./app/Stock";
+import Landing from "./pages/Landing";
 import Settings from "./app/Settings";
 import history from "./history";
+import "style.css";
+
 
 export const PrivateRoute = ({component: Component, ...rest}) => {
   return <Route
@@ -39,13 +42,15 @@ export default class App extends Component {
         path: '/register', component: Register
       }, {
         path: '/login', component: Login
+      }, {
+        path: '/', component: Landing
       },
     ];
 
     return <Router history={history}>
       <div className={"page-content"}>
         <Switch>
-          <PrivateRoute exact path={'/dashboard'} component={Dashboard}/>
+          <Route exact path={'/'} component={Landing}/>
           {routes.map(({path, component}, i) =>
             <Route key={i} exact path={path} component={component}/>
           )}

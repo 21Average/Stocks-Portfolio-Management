@@ -6,24 +6,33 @@ import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
 import PerformanceChart from "./PerformanceChart";
 import PricePredictionChart from "./PricePredictionChart";
+import Search from "./Search.js";
+/* import "./Search.css"; */
 
 
 export default class Stock extends Component {
-  state = {
-    symbol: '',
-    name: '',
-    activeItem: 'historical data',
-    lastUpdated: '',
-    stockInfo: {},
-    stockHistory: {},
-    stockPrediction: {},
-    stockRecommendation: '',
-    rangeSelected: '6m',
-    isStockLoading: false,
-    showError: false,
+  constructor(props) {
+    super(props);
+    this.state = {
+      symbol: '',
+      name: '',
+      activeItem: 'historical data',
+      lastUpdated: '',
+      stockInfo: {},
+      stockHistory: {},
+      stockPrediction: {},
+      stockRecommendation: '',
+      rangeSelected: '6m',
+      isStockLoading: false,
+      showError: false,
     errorMsg: '',
-    showRecommendation: true
-  };
+    showRecommendation: true,
+      newsdata: [],
+      newscount: 0,
+      newsvalue: this.props.default
+    };
+    this.apiUrl = `https://newsapi.org/v2/sources?language=en&apiKey=77b21799ccd841928ffe835d5656adea`;
+  }
 
   componentDidMount() {
     const {symbol} = this.props.match.params;
@@ -122,6 +131,19 @@ export default class Stock extends Component {
     }
   };
 
+  // Lifecycle method
+  componentWillMount() {
+    // Make HTTP reques with Axios
+    axios.get(this.apiUrl).then(res => {
+      // Set state with result
+      this.setState({ data: res.data.sources });
+      this.setState({ count: res.data.sources.length });
+      //console.log(this.state.data);
+      console.log(this.state.value);
+    });
+  }
+
+
   render() {
     const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, stockRecommendation, rangeSelected, isStockLoading, showError, errorMsg, showRecommendation} = this.state;
     const intervals = ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y'];
@@ -164,7 +186,10 @@ export default class Stock extends Component {
         </Container>
       } else if (display === 'related news') {
         return <Container align={'center'}>
-          <Header>Related News</Header>
+          <Header>Related News <Header.Subheader>(Rating value is between -1 and 1, where -1 means 100% negative and 1
+            means 100% positive)</Header.Subheader></Header>
+          <Divider hidden/>
+          <Search default="business-insider-uk" qkey={symbol}/>
         </Container>
       } else if (display === 'price prediction') {
         return <Container align={'center'}>

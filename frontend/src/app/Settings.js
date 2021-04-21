@@ -99,7 +99,7 @@ export default class Settings extends Component {
         <Segment className={'portfolio'}>
           <Grid columns={2}>
             <Grid.Column>
-              <Header as={'h1'}>Settings</Header>
+              <Header as={'h1'}>Account Settings</Header>
             </Grid.Column>
             <Grid.Column align={'right'}>
               <Button size='large' icon={'chevron right'} labelPosition={'right'} content={'Logout'} onClick={() => {

@@ -78,7 +78,7 @@ export default class UpdateStockModal extends Component {
         <Container textAlign={'center'}>
           <Header as={'h4'}>Select an action:</Header>
           <Button.Group fluid>
-            <Button onClick={() => this.setState({action: 'buy', showError: false})} color={action === 'buy' ? 'blue' : null}>Buy</Button>
+            <Button onClick={() => this.setState({action: 'buy', showError: false})} color={action === 'buy' ? 'blue' : null}>Update</Button>
             <Button.Or/>
             <Button onClick={() => this.setState({action: 'sell', showError: false})} color={action === 'sell' ? 'blue' : null}>Sell</Button>
           </Button.Group>

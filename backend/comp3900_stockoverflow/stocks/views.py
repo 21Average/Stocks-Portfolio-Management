@@ -380,23 +380,24 @@ def get_portfolios_summary(request):
         owner_id = request.user.id
         portfolios = Portfolio.objects.filter(owner_id=owner_id, ptype='Transaction').order_by('id')
         for portfolio in portfolios:
-            tickers = ','.join(portfolio.stock_list)
-            base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
-            stock_data = search_stock_batch(base_url, tickers)
-            total_gain_loss = 0
-            num_stocks = len(portfolio.stock_list)
-            for stock in stock_data:
-                # get data from db and combine with data pulled from api
-                stock_db = Stock.objects.get(ticker=stock['symbol'], portfolio_id=portfolio.id)
-                # re-calculate profit from stock's latest price
-                profit = round(((decimal.Decimal(stock["latestPrice"]) - stock_db.buying_price) * stock_db.quality), 2)
-                total_gain_loss += profit
-            data.append({
-                "name": portfolio.name,
-                "numStocks": num_stocks,
-                "totalGL": total_gain_loss,
-                "stocks": portfolio.stock_list
-            })
+            if portfolio.stock_list:
+                tickers = ','.join(portfolio.stock_list)
+                base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
+                stock_data = search_stock_batch(base_url, tickers)
+                total_gain_loss = 0
+                num_stocks = len(portfolio.stock_list)
+                for stock in stock_data:
+                    # get data from db and combine with data pulled from api
+                    stock_db = Stock.objects.get(ticker=stock["symbol"], portfolio_id=portfolio.id)
+                    # re-calculate profit from stock's latest price
+                    profit = round(((decimal.Decimal(stock["latestPrice"]) - stock_db.buying_price) * stock_db.quality), 2)
+                    total_gain_loss += profit
+                data.append({
+                    "name": portfolio.name,
+                    "numStocks": num_stocks,
+                    "totalGL": total_gain_loss,
+                    "stocks": portfolio.stock_list
+                })
         if data and len(data) > 0:
             return Response(data, status=HTTP_200_OK)
         else:
@@ -548,6 +549,26 @@ def get_stock_prediction(request):
         if data and len(data) > 0:
             return Response(data, status=HTTP_200_OK)
     return Response({"error": "Could not retrieve stock price prediction"}, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_stock_news(request):
+    if request.method == "POST":
+        news = request.data['news']
+        newsToSend = []
+        for i, article in enumerate(news):
+            rating = predict_rating(article['title'])
+            if rating:
+                newsToSend.append(news[i])
+                newsToSend[i]['rating'] = rating
+            else:
+                newsToSend.append(news[i])
+                newsToSend[i]['rating'] = ''
+
+        if newsToSend and len(newsToSend) > 0:
+            return Response(newsToSend, status=HTTP_200_OK)
+    return Response({"error": "Could not retrieve stock-related news"}, status=HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
