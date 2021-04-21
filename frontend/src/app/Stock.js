@@ -17,6 +17,7 @@ export default class Stock extends Component {
     stockInfo: {},
     stockHistory: {},
     stockPrediction: {},
+    stockRecommendation: '',
     rangeSelected: '6m',
     isStockLoading: false,
     showError: false,
@@ -59,6 +60,15 @@ export default class Stock extends Component {
       });
     }
     this.setState({symbol, lastUpdated: date.toLocaleString('en-AU')});
+    axios({
+      headers: AXIOS_HEADER(token),
+      method: 'post', url: `${BACKEND_URL}/stocks/getStockRecommendation/`,
+      data: {'ticker': symbol}
+    }).then(({data}) => {
+      this.setState({stockRecommendation: data["recommendation"]})
+    }).catch(({response}) => {
+      alert("Oops! " + response.data['error'])
+    });
   }
 
   numberWithComma = (x) => {
@@ -109,9 +119,9 @@ export default class Stock extends Component {
   };
 
   render() {
-    const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, rangeSelected, isStockLoading, showError, errorMsg} = this.state;
+    const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, stockRecommendation, rangeSelected, isStockLoading, showError, errorMsg} = this.state;
     const intervals = ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y'];
-    let data, data2, percent, percentSymbol, percentColour;
+    let data, data2, percent, percentSymbol, percentColour, recommendationColour;
     if (stockInfo) {
       data = [
         {key: "Market Cap", value: stockInfo["marketCap"] ? `$${this.numberWithComma(stockInfo["marketCap"])}` : '-'},
@@ -126,6 +136,7 @@ export default class Stock extends Component {
       percent = (stockInfo["changePercent"] * 100).toFixed(2);
       percentSymbol = percent > 0 ? '+' : '';
       percentColour = percent >= 0 ? (percent > 0 ? 'green' : null) : 'red';
+      recommendationColour = stockInfo["recommendation"] === 'Recommended to Sell' ? 'green' : 'red';
     }
 
     // historical data, related news, price prediction
@@ -180,6 +191,9 @@ export default class Stock extends Component {
             <Header align={'center'} as={'h1'}>{name}
               <Header.Subheader>({symbol})</Header.Subheader>
             </Header>
+            {stockRecommendation ?
+              <Label size={'large'} color={recommendationColour}>{stockRecommendation}</Label> :
+              <Label size={'large'}><Icon name={'spinner'} loading/> Analysing stock</Label>}
             <Divider/>
             {isStockLoading ? <Container align={'center'} verticalAlign={'middle'} style={{minHeight: '120px'}}>
               <Icon name='spinner' loading/></Container> : <Grid columns={3}>

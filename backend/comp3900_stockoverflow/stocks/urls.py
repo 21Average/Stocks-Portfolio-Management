@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 from .views import portfolio_create_form, home, portfolio_manage_form, watchList_manage_form, get_portfolio_list, \
     stock_info, add_stock, update_stock_share, delete_stock, get_stock_data, get_stock_history, get_stock_prediction, \
-    get_all_stock_data, create_portfolio, delete_portfolios, get_portfolios_summary, get_latest_stock_news
+    get_all_stock_data, create_portfolio, delete_portfolios, get_portfolios_summary, get_latest_stock_news, get_stock_recommendation
 
 app_name = 'stocks'
 
@@ -21,6 +21,7 @@ urlpatterns = [
     re_path(r'^(?P<portfolio_pk>\d+)/updateStock/', update_stock_share, name='updateStock'),
     re_path(r'^(?P<portfolio_pk>\d+)/deleteStock/', delete_stock, name='deleteStock'),
     path(r'getStock/', get_stock_data, name='getStock'),
+    path(r'getStockRecommendation/', get_stock_recommendation, name='getStockRecommendation'),
     path(r'getStockHistory/', get_stock_history, name='getStockHistory'),
     path(r'getStockPrediction/', get_stock_prediction, name='getStockPrediction'),
     re_path(r'^(?P<portfolio_pk>\d+)/getStocks/', get_all_stock_data, name='getStocks'),

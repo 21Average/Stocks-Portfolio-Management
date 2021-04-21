@@ -442,8 +442,9 @@ def add_stock(request, portfolio_pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_stock_data(request):
+    ticker = request.data['ticker']
     base_url = 'https://sandbox.iexapis.com/stable/stock/'
-    stock = search_stock(base_url, request.data['ticker'])
+    stock = search_stock(base_url, ticker)
     if 'Error' in stock:
         return Response(stock, status=HTTP_400_BAD_REQUEST)
     else:
@@ -461,6 +462,29 @@ def get_stock_data(request):
             "week52Low": stock["week52Low"]
         }
         return Response(data, status=HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_stock_recommendation(request):
+    ticker = request.data['ticker']
+    # Recommendation part
+    stock_data = history_data(ticker)
+    predicted_price = prediction(history_data(ticker, '1y'))
+    predicted_1m = predicted_price[29]
+    price_yes = stock_data[0]['close']
+    if price_yes is not None:
+        if (predicted_1m / price_yes) - 1 < 0.1:
+            recommendation = "Recommended to Sell"
+        else:
+            recommendation = "Recommended to Buy"
+    else:
+        recommendation = ""
+
+    if recommendation:
+        return Response({"recommendation": recommendation}, status=HTTP_200_OK)
+    else:
+        return Response({"recommendation": recommendation}, status=HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
