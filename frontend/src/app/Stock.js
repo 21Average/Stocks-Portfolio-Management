@@ -21,7 +21,8 @@ export default class Stock extends Component {
     rangeSelected: '6m',
     isStockLoading: false,
     showError: false,
-    errorMsg: ''
+    errorMsg: '',
+    showRecommendation: true
   };
 
   componentDidMount() {
@@ -37,7 +38,10 @@ export default class Stock extends Component {
       }).then(({data}) => {
         this.setState({stockInfo: data, name: data["companyName"]})
       }).catch(({response}) => {
-        alert("Oops! " + response.data['error'])
+        if (response.data && response.data['error']) {
+          alert("Oops! " + response.data['error'])
+        }
+        console.log("something went wrong")
       });
       axios({
         headers: AXIOS_HEADER(token),
@@ -67,7 +71,7 @@ export default class Stock extends Component {
     }).then(({data}) => {
       this.setState({stockRecommendation: data["recommendation"]})
     }).catch(({response}) => {
-      alert("Oops! " + response.data['error'])
+      this.setState({showRecommendation: false})
     });
   }
 
@@ -119,7 +123,7 @@ export default class Stock extends Component {
   };
 
   render() {
-    const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, stockRecommendation, rangeSelected, isStockLoading, showError, errorMsg} = this.state;
+    const {name, symbol, activeItem, lastUpdated, stockInfo, stockHistory, stockPrediction, stockRecommendation, rangeSelected, isStockLoading, showError, errorMsg, showRecommendation} = this.state;
     const intervals = ['1d', '5d', '1m', '6m', 'ytd', '1y', '5y'];
     let data, data2, percent, percentSymbol, percentColour, recommendationColour;
     if (stockInfo) {
@@ -191,9 +195,9 @@ export default class Stock extends Component {
             <Header align={'center'} as={'h1'}>{name}
               <Header.Subheader>({symbol})</Header.Subheader>
             </Header>
-            {stockRecommendation ?
+            {showRecommendation && <Container textAlign={'right'}>{stockRecommendation ?
               <Label size={'large'} color={recommendationColour}>{stockRecommendation}</Label> :
-              <Label size={'large'}><Icon name={'spinner'} loading/> Analysing stock</Label>}
+              <Label size={'large'}><Icon name={'spinner'} loading/> Analysing stock</Label>}</Container>}
             <Divider/>
             {isStockLoading ? <Container align={'center'} verticalAlign={'middle'} style={{minHeight: '120px'}}>
               <Icon name='spinner' loading/></Container> : <Grid columns={3}>

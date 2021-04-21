@@ -75,7 +75,7 @@ export default class Dashboard extends Component {
             </React.Fragment>}
           </Container>
           <Container>
-            <Divider/>
+            {portfolioData && articles && <Divider section/>}
             {articles ? <Container>
               <Header as={'h1'}>Latest News</Header>
               <Card.Group stackable>
@@ -93,7 +93,7 @@ export default class Dashboard extends Component {
                       </Card.Description>
                     </Card.Content>
                     <Card.Content extra>
-                      <a href={url}>{site} ({symbol})</a>
+                      <a href={url}>{site} (Stock: {symbol})</a>
                     </Card.Content>
                   </Card>
                 })}
