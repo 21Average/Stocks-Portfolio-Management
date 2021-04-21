@@ -173,7 +173,9 @@ export default class Stock extends Component {
         </Container>
       } else if (display === 'related news') {
         return <Container align={'center'}>
-          <Header>Related News</Header>
+          <Header>Related News <Header.Subheader>(Rating value is between -1 and 1, where -1 means 100% negative and 1
+            means 100% positive)</Header.Subheader></Header>
+          <Divider hidden/>
           <Search default="business-insider-uk" qkey={symbol}/>
         </Container>
       } else if (display === 'price prediction') {

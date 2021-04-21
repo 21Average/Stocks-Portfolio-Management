@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import axios from 'axios';
+import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
 
 class Display extends Component {
   constructor(props) {
@@ -9,6 +10,7 @@ class Display extends Component {
     this.state = {
       articles: [],
       qkey: this.props.qkey,
+      showError: false,
     };
   }
 
@@ -37,6 +39,7 @@ class Display extends Component {
   }
 
   getArticles(url) {
+    this.setState({showError: false});
     // Make HTTP reques with Axios
     axios
       .get(`https://newsapi.org/v2/everything?q=${this.state.qkey}&sources=${url}&apiKey=3d49ef572f9047e8bd276fb0d3b540ef`)
@@ -44,7 +47,18 @@ class Display extends Component {
         const articles = res.data.articles;
         // Set state with result
         console.log(articles);
-        this.setState({ articles: articles });
+        const token = localStorage.getItem("token");
+        if (token) {
+          axios({
+            headers: AXIOS_HEADER(token),
+            method: 'post', url: `${BACKEND_URL}/stocks/getStockNews/`,
+            data: {'news': articles}
+          }).then(({data}) => {
+            this.setState({articles: data});
+          }).catch(({response}) => {
+            this.setState({articles: [], showError: true});
+          });
+        }
       })
       .catch(error => {
         console.log(error);
@@ -52,9 +66,16 @@ class Display extends Component {
   }
 
   render() {
-    return (
-      <div className="cardsContainer">
-        {this.state.articles.map((news, i) => {
+    const {articles, showError} = this.state;
+
+    let getColour = (rating) => {
+      return rating.includes('Positive') ? 'green' : (rating.includes('Neutral') ? null : 'red')
+    };
+
+    return <React.Fragment>{showError ?
+      <div><br/><p style={{color: 'grey'}}>No related articles available from this source</p></div> :
+      <React.Fragment>{articles ? <div className="cardsContainer">
+        {articles.map((news, i) => {
           return (
             <div className="card" key={i}>
               <div className="content">
@@ -69,6 +90,8 @@ class Display extends Component {
                     By <i>{news.author ? news.author : this.props.default}</i>
                   </p>
                   <p>{this.formatDate(news.publishedAt)}</p>
+                  <p>Rating: <span
+                    style={{color: getColour(news.rating[0])}}>{news.rating[0]} ({news.rating[1].toFixed(3)})</span></p>
                 </div>
               </div>
               <div className="image">
@@ -77,8 +100,8 @@ class Display extends Component {
             </div>
           );
         })}
-      </div>
-    );
+      </div> : null}</React.Fragment>}
+    </React.Fragment>
   }
 }
 

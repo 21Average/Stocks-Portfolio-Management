@@ -421,6 +421,26 @@ def get_stock_prediction(request):
     return Response({"error": "Could not retrieve stock price prediction"}, status=HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_stock_news(request):
+    if request.method == "POST":
+        news = request.data['news']
+        newsToSend = []
+        for i, article in enumerate(news):
+            rating = predict_rating(article['title'])
+            if rating:
+                newsToSend.append(news[i])
+                newsToSend[i]['rating'] = rating
+            else:
+                newsToSend.append(news[i])
+                newsToSend[i]['rating'] = ''
+
+        if newsToSend and len(newsToSend) > 0:
+            return Response(newsToSend, status=HTTP_200_OK)
+    return Response({"error": "Could not retrieve stock-related news"}, status=HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_stock_data(request, portfolio_pk):
