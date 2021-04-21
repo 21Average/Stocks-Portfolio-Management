@@ -1,0 +1,40 @@
+Week1:
+- Discussed and collaborated with the group regarding which project and features we wanted to implement.
+
+- 18/02: Write user stories for three features of our stock portfolio management tool
+
+- 19/02: Write problem background, project purpose & features
+
+
+Week2:
+- Discussed with group on finalising the minimum 8 features/functions. Discussed structure of the system architecture and which services/languages we would use. 
+
+- 28/02: Wrote and modify the existing user stories, polished acceptance criteria.
+- Add user stories for recommendation part of the project
+
+Week3:
+- 05/03: Make changes to project purposes/features
+- 06/03: add user stories and acceptance criteria for Alert Epic. Update user stories and write Acceptance criteria for Sentiment analysis, prediction, Alert, Recommendation part of the project.
+- 07/03: write description for graph epic and add acceptance criteria for user stories.
+
+Week4:
+Discussed projects models with members. Write python files for models.
+Add simple implementation of stock API. This feature is implemented on git branch called stock_api.
+
+Week5:
+Present the demo and implement sentiment analysis stories by using model from VadarSentiment, LSTM model from IMDB review
+
+Week6:
+Implement Deep learning model based on IMDB review dataset from keras
+
+Week7:
+Implement additional SVC model trained on online dataset. Saved all trained models locally
+Research News API and apply sentiment analysis functions to the scraped stock news
+
+Week8 / Week9:
+1. Conduct research stock API  and discussed with member about pulling history data of stocks from API and display in graph
+2. Refine the proprecessing functions of each sentiment models
+3. Initiate and have a meeting with team member about implementing the stock information page
+3. Write functions that pulls data from stock api that will be displayed in graph for frontend
+4. Merge sentiment analysis functions into the project and update requirements.txt
+5. Prepare slides about sentiment analysis for the final demo

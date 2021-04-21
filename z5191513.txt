@@ -1,0 +1,42 @@
+Week01
+Our group is formed in this week and the team name is 'Stock Overflow'.
+We created Jira account and linked it to Github.
+We decided our topic would be 'Portfolio management system' since this topic sounds a little bit chanllenging and we would like to have a try.
+We created a google doc for the proposal and will collaborate on that for few weeks.
+
+Week02
+We talked with the tutor about our project topic and finnally decided to choose it.
+We started working on the proposal and I wrote some user stories in the proposal.
+We formed a meeting on Sunday and talked about the libraries & APIs we might have to use in the project.
+
+Week03
+I add more user stories to the proposal and also wrote some acceptance cretiria for them.
+I talked about the form of acceptance cretiria with others during the meeting and finnally decide to use the form as below.
+'Given that I am ..., when..., I will...'
+I wrote some comments based on others' work and we talked about these and modified some of them.
+
+Week04
+I watched some tutorials about Django on youtube and tried to implement the sign-up & sign-in part.
+Since Rudy and Regine were also implementing that at that time, I decided to implement the graph part.
+I retrived the historical data from IEX API and presented them on a graph by utilizing the matlibplot.
+
+Week05
+We had a demo this week and I presented the graph part to the tutor.
+I am still looking for some other ways to reimplement the graph part since our graph is not that fancy.
+
+Week06
+Regine found a good API on frontend that it can present a good graph based on the historical data stored in json file,
+so I stops working on the graph part.
+I started to work on the price prediction part and I was thinking I can combine this with sentiment analysis(Done by Dino)
+to make a recommendation system.
+
+Week07
+I did the price prediction based on a notebook on Kaggle and it gave me so much useful thoughts.
+I analysed the stock data we had and decided to make the prediction based on the data in past 20 days.
+I had not find a way to retrive the real-time data from IEX API so I temporarily used the local-stored data of Tesla to do the prediction.
+
+Week08/09
+I have found a way to retrieve the real-time historical data from IEX API so I modified my functions to give the most updated prediction results.
+I merged the prediction part into our main project and it works well on that.
+I created a new vitual environment and added all the libraries we need to the requirements.txt.
+I made the slides for price prediction part and would present them in Week10's final demo.
