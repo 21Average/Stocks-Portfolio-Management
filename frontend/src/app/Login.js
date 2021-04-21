@@ -13,7 +13,7 @@ export default class Login extends Component {
   };
 
   handleChange = (e, {name, value}) => {
-    this.setState({[name]: value});
+    this.setState({[name]: value, showErrorMsg: false});
   };
 
   handleClick = () => {
@@ -39,13 +39,10 @@ export default class Login extends Component {
       </Header>
       <Divider/>
       <Form>
-        <Form.Input fluid icon='mail' iconPosition='left' name={'email'} placeholder='Enter your email'
+        <Form.Input required fluid icon='mail' iconPosition='left' name={'email'} placeholder='Enter your email'
                     onChange={this.handleChange}/>
-        <Form.Input fluid icon='lock' iconPosition='left' name={'password'} placeholder='Enter your password'
+        <Form.Input required fluid icon='lock' iconPosition='left' name={'password'} placeholder='Enter your password'
                     type='password' onChange={this.handleChange}/>
-        <Container textAlign={'right'}>
-          <a style={{'color': 'gray'}} href={"/"}>Forgot your password?</a>
-        </Container>
         <br/>
         <Form.Button color='teal' fluid size='large' onClick={this.handleClick}>Login</Form.Button>
       </Form>

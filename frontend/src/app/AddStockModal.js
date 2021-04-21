@@ -31,13 +31,23 @@ export default class AddStockModal extends Component {
 
   handleAdd = () => {
     const {name, price, quantity} = this.state;
+    let dataToSend;
     const token = localStorage.getItem("token");
-    if (this.checkValues(price, quantity)) {
+    if (this.props.pType === 'Transaction') {
+      dataToSend = this.checkValues(price, quantity) ? {
+        'ticker': name,
+        'buying_price': price,
+        'quality': quantity
+      } : null;
+    } else if (this.props.pType === 'Watchlist') {
+      dataToSend = {'ticker': name}
+    }
+    if (dataToSend) {
       if (token) {
         axios({
           headers: AXIOS_HEADER(token),
           method: 'post', url: `${BACKEND_URL}/stocks/${this.props.pID}/addStock/`,
-          data: {'ticker': name, 'buying_price': price, 'quality': quantity}
+          data: dataToSend
         }).then(() => {
           localStorage.setItem("p_id", this.props.pID);
           localStorage.setItem("p_name", this.props.pName);
@@ -69,7 +79,7 @@ export default class AddStockModal extends Component {
                             onChange={this.handleChange}/>
                 <Form.Input label={'Quantity'} name={'quantity'} input={'number'} min={1} onChange={this.handleChange}/>
               </Form.Group>
-              {showError && <Message negative>Please enter a valid price, quantity and fee value</Message>}
+              {showError && <Message negative>Please enter a valid price and quantity value</Message>}
             </Form>
           </Container> :
           <VirtualizedSelect

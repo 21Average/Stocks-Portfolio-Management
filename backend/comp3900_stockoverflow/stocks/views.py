@@ -372,6 +372,37 @@ def get_portfolio_list(request):
             return Response(serialized.errors, status=HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_portfolios_summary(request):
+    if request.method == "GET":
+        data = []
+        owner_id = request.user.id
+        portfolios = Portfolio.objects.filter(owner_id=owner_id, ptype='Transaction').order_by('id')
+        for portfolio in portfolios:
+            tickers = ','.join(portfolio.stock_list)
+            base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
+            stock_data = search_stock_batch(base_url, tickers)
+            total_gain_loss = 0
+            num_stocks = len(portfolio.stock_list)
+            for stock in stock_data:
+                # get data from db and combine with data pulled from api
+                stock_db = Stock.objects.get(ticker=stock['symbol'], portfolio_id=portfolio.id)
+                # re-calculate profit from stock's latest price
+                profit = round(((decimal.Decimal(stock["latestPrice"]) - stock_db.buying_price) * stock_db.quality), 2)
+                total_gain_loss += profit
+            data.append({
+                "name": portfolio.name,
+                "numStocks": num_stocks,
+                "totalGL": total_gain_loss,
+                "stocks": portfolio.stock_list
+            })
+        if data and len(data) > 0:
+            return Response(data, status=HTTP_200_OK)
+        else:
+            return Response({"error": "Could not retrieve portfolios summary"}, status=HTTP_400_BAD_REQUEST)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_stock(request, portfolio_pk):
@@ -380,8 +411,7 @@ def add_stock(request, portfolio_pk):
         ticker = request.data['ticker']
         if ticker:
             if check_stock_ticker_existed(ticker, portfolio):
-                return Response({"error": f'{ticker} is already in Portfolio'}, status=HTTP_400_BAD_REQUEST)
-
+                return Response({"error": f'{ticker} is already in your portfolio'}, status=HTTP_400_BAD_REQUEST)
             if check_valid_stock_ticker(ticker):
                 # Watchlist stock: just add to portfolio and save
                 if portfolio.stock_list:

@@ -9,8 +9,6 @@ export default class NavBar extends Component {
     const items = [
       {name: 'Dashboard', to: '/dashboard'},
       {name: 'Portfolio', to: '/portfolio'},
-      // {name: 'Recommendations', to: '/recommendations'},
-      // {name: 'News', to: '/news'},
       {name: 'Settings', to: '/settings'},
     ];
 

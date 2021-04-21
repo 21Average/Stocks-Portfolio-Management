@@ -160,7 +160,7 @@ export default class Stock extends Component {
                 <PricePredictionChart closeData={stockPrediction["close_data"]}
                                       predictionData={stockPrediction["prediction_data"]}/> :
                 <Loader active>Calculating predictions...</Loader>}
-            </Grid.Row>}
+            </Grid.Row>
             <Grid.Row>
               <Label color={'teal'} size={'large'}>Historical data</Label>
               <Label color={'yellow'} size={'large'}>Predicted prices</Label>

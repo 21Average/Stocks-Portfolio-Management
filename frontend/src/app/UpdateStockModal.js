@@ -26,7 +26,7 @@ export default class UpdateStockModal extends Component {
           return true
         }
       }
-      this.setState({errorMsg: "Please enter a valid price, quantity and fee value", showError: true});
+      this.setState({errorMsg: "Please enter a valid price and quantity value", showError: true});
       return false
     } else if (action === 'sell') {
       if (quantity > stock["quality"]) {

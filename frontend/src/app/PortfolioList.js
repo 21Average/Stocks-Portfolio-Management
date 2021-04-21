@@ -41,7 +41,7 @@ export default class PortfolioList extends Component {
 
   render() {
     const {portfolioList, isLoading} = this.state;
-    const headerRow = ['Name', 'Type', 'Description'];
+    const headerRow = ['Name', 'Type', 'Description', 'Date Created'];
 
     return <React.Fragment>
       <NavBar/>
@@ -62,12 +62,14 @@ export default class PortfolioList extends Component {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {portfolioList.map(({name, ptype, desc}, i) =>
-                      <Table.Row key={i} onClick={() => this.selectPortfolio(i)}>
+                    {portfolioList.map(({name, ptype, desc, date_created}, i) => {
+                      let dateDisplay = new Date(date_created).toLocaleDateString();
+                      return <Table.Row key={i} onClick={() => this.selectPortfolio(i)}>
                         <Table.Cell>{name}</Table.Cell>
                         <Table.Cell>{ptype}</Table.Cell>
                         <Table.Cell>{desc}</Table.Cell>
-                      </Table.Row>)}
+                        <Table.Cell>{dateDisplay}</Table.Cell>
+                      </Table.Row>})}
                   </Table.Body>
                 </Table>
               </Grid.Row>

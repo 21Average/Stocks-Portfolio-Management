@@ -13,11 +13,19 @@ export default class Register extends Component {
     password1: '',
     password2: '',
     showErrorMsg: false,
-    errorMsg: ''
+    errorMsg: '',
+    disableBtn: true
   };
 
   handleChange = (e, {name, value}) => {
-    this.setState({[name]: value});
+    this.setState({[name]: value, showErrorMsg: false});
+    // if all fields are filled, enable register button
+    const {email, firstName, lastName, password1, password2} = this.state;
+    if (email && firstName && lastName && password1 && password2) {
+      this.setState({disableBtn: false})
+    } else {
+      this.setState({disableBtn: true})
+    }
   };
 
   handleClick = () => {
@@ -30,19 +38,28 @@ export default class Register extends Component {
         }).then(({data}) => {
           localStorage.setItem("token", data.token);
           history.push('/dashboard')
-        }).catch(() => {
-          this.setState({errorMsg: 'Account already exists', showErrorMsg: true});
+        }).catch(({response}) => {
+          let err = response.data['email'][0];
+          if (err !== undefined) {
+            if (err.includes("custom")) {
+              this.setState({errorMsg: 'Account already exists.', showErrorMsg: true});
+            } else {
+              this.setState({errorMsg: err, showErrorMsg: true});
+            }
+          } else {
+            this.setState({errorMsg: "Registration failed. Please try again later.", showErrorMsg: true});
+          }
         });
       } else {
-        this.setState({errorMsg: 'Password must have at least 8 characters', showErrorMsg: true})
+        this.setState({errorMsg: 'Password must have at least 8 characters.', showErrorMsg: true})
       }
     } else {
-      this.setState({errorMsg: 'Passwords do not match', showErrorMsg: true})
+      this.setState({errorMsg: 'Passwords do not match.', showErrorMsg: true})
     }
   };
 
   render() {
-    const {showErrorMsg, errorMsg} = this.state;
+    const {showErrorMsg, errorMsg, disableBtn} = this.state;
 
     let formContent = [
       {
@@ -92,7 +109,7 @@ export default class Register extends Component {
             key={i} placeholder={placeholder} name={name} value={value} icon={icon} iconPosition={'left'}
             type={type ? type : ''} fluid required onChange={this.handleChange}/> : null)}
         {showErrorMsg ? <Message negative>{errorMsg}</Message> : null}
-        <Form.Button color='teal' fluid size='large' onClick={() => {
+        <Form.Button disabled={disableBtn} color='teal' fluid size='large' onClick={() => {
           this.setState({showErrorMsg: false});
           this.handleClick()
         }}>Register</Form.Button>
