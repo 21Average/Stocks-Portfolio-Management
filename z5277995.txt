@@ -1,0 +1,39 @@
+Week 1
+
+Formed a group and collectively decided to work on Project 4: Stock Portfolio Management System. Discussed core features to include and possible extension features. We setup the project proposal and a shared folder to store team documents.
+
+Week 2
+
+Discussed APIs we could use for pulling down real-time data for our app. Each member volunteered to focus on a specific section (backend, frontend, etc.) and we settled on developing a web application.
+
+We discussed our software architecture and established a stack consisting of: Python (Django), JavaScript (React) and a local database (to be confirmed if allowed). We continued to discuss features we intend to implement and also began to explore different user types to consider.
+
+Week 3
+
+We finalised the features we wanted to develop and confirmed with our mentor. Also wrote more user stories to flesh out the functionality involved. We connected our GitHub accounts to the project and planned another group meeting to finalise our proposal.
+
+Week 4
+
+The team has finalised the proposal, including: user stories, sprints (duration, start/end dates, etc.) and the system architecture. We had a meeting about setting up the platform and starting sprint 1.
+
+Week 5
+
+I setup the frontend side of the project using React, React Router and Semantic UI React. I helped implement Login functionality in frontend and backend, and also integrated the backend of the Register component with the frontend. Participated in a team retrospective - contributed ideas and opinions to what worked/what didn't.
+ 
+Week 7
+
+I implemented the Settings functionality and updated the User model in the backend to use CustomUser model instead. I made adjustments to register/login functionality to use the CustomUser model - user details now save/update via Settings tab.
+
+Week 8
+
+I connected 'add' stock/portfolio functionality on backend to frontend. I also cleaned up frontend more - added specific views for each portfolio type (e.g. transaction or watchlist). I fixed portfolios header to match other pages for consistency. I participated in a team retrospective - contributed ideas and opinions to what worked/what didn't.
+
+Week 9
+
+I started designing the Stock page and portfolio summary on Portfolio page. I changed 'Home' page to 'Dashboard' and started brainstorming on what to add to Dashboard page. I also changed stock symbol input (when adding stock) to be a populated dropdown menu instead of textbox so users have a selection to choose from.
+
+I integrated historical data and price prediction functionality (that was functioning on backend) with frontend. I also integrated delete stock/portfolio functionality on frontend.
+
+Week 10
+
+I added portfolio summary info to Portfolio page (e.g. portfolio value, today's gain/loss, total gain/loss). I added portfolio summary to Dashboard page. I tested current system and fixed bugs found - e.g. added checks that validated user input. I also removed redundant/unused code and reviewed comments.
