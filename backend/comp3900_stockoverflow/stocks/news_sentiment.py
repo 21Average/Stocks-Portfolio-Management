@@ -234,23 +234,17 @@ def get_simple_pos(tag):
 
 # In[15]:
 
-
-# Function to clean our text.
-lemmatizer = WordNetLemmatizer()
-
 def cleanText(text):
     text = BeautifulSoup(text, "lxml").text
     text = re.sub(r'\|\|\|', r' ', text) 
     text = re.sub(r'http\S+', r'<URL>', text)
     text = text.lower()
     text = text.replace('x', '')
-
+    
     clean_text = []
     for w in word_tokenize(text):
         if w.lower() not in stop:
-            pos = pos_tag([w])
-            new_w = lemmatizer.lemmatize(w, pos=get_simple_pos(pos[0][1]))
-            clean_text.append(new_w)
+            clean_text.append(w)
     return clean_text
 
 def join_text(text):
