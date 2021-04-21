@@ -25,7 +25,7 @@ export default class AddPortfolioModal extends Component {
     const {name, ptype, desc} = this.state;
     const token = localStorage.getItem("token");
     if (name && ptype && desc) {
-      if (name.length <= 10) {
+      if (name.length > 10) {
         this.setState({showError: true, errorMsg: 'Portfolio name can only be max. 10 characters'});
       } else {
         if (token) {

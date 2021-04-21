@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Segment, Container, Header, Table, Divider, Loader} from "semantic-ui-react";
+import {Segment, Container, Header, Table, Divider, Loader, Card, Image} from "semantic-ui-react";
 import NavBar from "./NavBar";
 import axios from "axios";
 import {AXIOS_HEADER, BACKEND_URL} from "../defaults";
@@ -19,6 +19,15 @@ export default class Dashboard extends Component {
         method: 'get', url: `${BACKEND_URL}/stocks/getPortfoliosSummary/`
       }).then(({data}) => {
         this.setState({portfolioData: data, isLoading: false});
+      }).catch(({response}) => {
+        // alert('Oops! ' + (response.data['error']));
+        this.setState({isLoading: false})
+      });
+      axios({
+        headers: AXIOS_HEADER(token),
+        method: 'get', url: `${BACKEND_URL}/stocks/getStocksNews/`
+      }).then(({data}) => {
+        this.setState({articles: data, isLoading: false})
       }).catch(({response}) => {
         alert('Oops! ' + (response.data['error']));
         this.setState({isLoading: false})
@@ -40,8 +49,8 @@ export default class Dashboard extends Component {
       <Container>
         <Segment className={'portfolio'}>
           <Container>
-            {portfolioData ? <React.Fragment>
-              <Header>Portfolio Overview</Header>
+            {portfolioData && <React.Fragment>
+              <Header as={'h1'}>Portfolio Overview</Header>
               <Table basic='very' celled>
                 <Table.Header>
                   <Table.Row>
@@ -63,12 +72,33 @@ export default class Dashboard extends Component {
                   })}
                 </Table.Body>
               </Table>
-            </React.Fragment> : <Loader active/>}
+            </React.Fragment>}
           </Container>
           <Container>
-            <Divider hidden/>
-            <Header>News</Header>
-            {articles ? <Container>hi</Container> : null}
+            <Divider/>
+            {articles ? <Container>
+              <Header as={'h1'}>Latest News</Header>
+              <Card.Group stackable>
+                {articles.map(({image, publishedDate, site, symbol, text, title, url}, i) => {
+                  let heading = title.length < 50 ? title : title.substring(0, 50) + '...';
+                  let desc = text.length < 100 ? text : text.substring(0, 100) + '...';
+                  let published = new Date(publishedDate).toLocaleDateString();
+                  return <Card key={i} href={url} link target="_blank">
+                    <Image src={image} wrapped ui={false}/>
+                    <Card.Content>
+                      <Card.Header>{heading}</Card.Header>
+                      <Card.Meta>Published: {published}</Card.Meta>
+                      <Card.Description>
+                        {desc}
+                      </Card.Description>
+                    </Card.Content>
+                    <Card.Content extra>
+                      <a href={url}>{site} ({symbol})</a>
+                    </Card.Content>
+                  </Card>
+                })}
+              </Card.Group>
+            </Container> : null}
           </Container>
         </Segment>
       </Container>

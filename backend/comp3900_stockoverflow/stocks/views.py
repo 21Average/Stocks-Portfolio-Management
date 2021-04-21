@@ -605,6 +605,19 @@ def get_all_stock_data(request, portfolio_pk):
         return Response({"error": "Currently, there are no stocks in your portfolio!"}, status=HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_latest_stock_news(request):
+    key = settings.FMP_API
+    url = "https://financialmodelingprep.com/api/v3/stock_news?" + "&limit=50&apikey=" + key
+    data = requests.get(url)
+    if data.status_code == 200:
+        data = json.loads(data.content)
+        return Response(data, status=HTTP_200_OK)
+    else:
+        return Response({"error": "Could not retrieve latest news"}, status=HTTP_400_BAD_REQUEST)
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_stock(request, portfolio_pk):
