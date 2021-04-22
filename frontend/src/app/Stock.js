@@ -25,8 +25,8 @@ export default class Stock extends Component {
       rangeSelected: '6m',
       isStockLoading: false,
       showError: false,
-    errorMsg: '',
-    showRecommendation: true,
+      errorMsg: '',
+      showRecommendation: true,
       newsdata: [],
       newscount: 0,
       newsvalue: this.props.default
@@ -35,7 +35,7 @@ export default class Stock extends Component {
   }
 
   componentDidMount() {
-    const {symbol} = this.props.match.params;
+    const {id} = this.props.match.params;
     const {rangeSelected} = this.state;
     let date = new Date();
     const token = localStorage.getItem("token");
@@ -43,9 +43,9 @@ export default class Stock extends Component {
       axios({
         headers: AXIOS_HEADER(token),
         method: 'post', url: `${BACKEND_URL}/stocks/getStock/`,
-        data: {'ticker': symbol}
+        data: {'stock_id': id}
       }).then(({data}) => {
-        this.setState({stockInfo: data, name: data["companyName"]})
+        this.setState({stockInfo: data, symbol: data["symbol"], name: data["companyName"]})
       }).catch(({response}) => {
         if (response.data && response.data['error']) {
           alert("Oops! " + response.data['error'])
@@ -55,7 +55,7 @@ export default class Stock extends Component {
       axios({
         headers: AXIOS_HEADER(token),
         method: 'post', url: `${BACKEND_URL}/stocks/getStockPrediction/`,
-        data: {'ticker': symbol}
+        data: {'stock_id': id}
       }).then(({data}) => {
         this.setState({stockPrediction: data})
       }).catch(() => {
@@ -65,18 +65,18 @@ export default class Stock extends Component {
       axios({
         headers: AXIOS_HEADER(token),
         method: 'post', url: `${BACKEND_URL}/stocks/getStockHistory/`,
-        data: {'ticker': symbol, 'range': rangeSelected}
+        data: {'stock_id': id, 'range': rangeSelected}
       }).then(({data}) => {
         this.setState({stockHistory: data})
       }).catch(() => {
         this.setState({showError: true, errorMsg: "Historical data currently not available", stockHistory: {}})
       });
     }
-    this.setState({symbol, lastUpdated: date.toLocaleString('en-AU')});
+    this.setState({lastUpdated: date.toLocaleString('en-AU')});
     axios({
       headers: AXIOS_HEADER(token),
       method: 'post', url: `${BACKEND_URL}/stocks/getStockRecommendation/`,
-      data: {'ticker': symbol}
+      data: {'stock_id': id}
     }).then(({data}) => {
       this.setState({stockRecommendation: data["recommendation"]})
     }).catch(({response}) => {
@@ -91,14 +91,14 @@ export default class Stock extends Component {
   handleItemClick = (e, {name}) => this.setState({activeItem: name});
 
   refreshInfo = () => {
-    const {symbol} = this.state;
+    const {id} = this.props.match.params;
     this.setState({isStockLoading: true});
     const token = localStorage.getItem("token");
     if (token) {
       axios({
         headers: AXIOS_HEADER(token),
         method: 'post', url: `${BACKEND_URL}/stocks/getStock/`,
-        data: {'ticker': symbol}
+        data: {'stock_id': id}
       }).then(({data}) => {
         let date = new Date();
         this.setState({
@@ -116,13 +116,13 @@ export default class Stock extends Component {
 
   handleChangeInterval = (interval) => {
     this.setState({stockHistory: {}, rangeSelected: interval});
-    const {symbol} = this.props.match.params;
+    const {id} = this.props.match.params;
     const token = localStorage.getItem("token");
     if (token) {
       axios({
         headers: AXIOS_HEADER(token),
         method: 'post', url: `${BACKEND_URL}/stocks/getStockHistory/`,
-        data: {'ticker': symbol, 'range': interval}
+        data: {'stock_id': id, 'range': interval}
       }).then(({data}) => {
         this.setState({stockHistory: data})
       }).catch(({response}) => {
@@ -162,7 +162,10 @@ export default class Stock extends Component {
       percent = (stockInfo["changePercent"] * 100).toFixed(2);
       percentSymbol = percent > 0 ? '+' : '';
       percentColour = percent >= 0 ? (percent > 0 ? 'green' : null) : 'red';
-      recommendationColour = stockInfo["recommendation"] === 'Recommended to Sell' ? 'green' : 'red';
+    }
+
+    if (stockRecommendation) {
+      recommendationColour = stockRecommendation === 'Recommended to Buy' ? 'green' : 'red';
     }
 
     // historical data, related news, price prediction

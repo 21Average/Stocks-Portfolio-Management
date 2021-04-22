@@ -352,8 +352,8 @@ def delete_portfolios(request):
             portfolio = Portfolio.objects.get(name=port_name, owner_id=request.user.id)
             if portfolio.ptype == "Transaction":
                 for stock in portfolio.stock_list:
-                    stock_obj = Stock.objects.get(ticker=stock, portfolio_id=portfolio.id)
-                    stock_obj.delete()
+                    stock_objs = Stock.objects.filter(ticker=stock, portfolio_id=portfolio.id)
+                    stock_objs.delete()
             portfolio.delete()
         return Response({"success": "Portfolio deleted"}, status=HTTP_200_OK)
     return Response({"error": "Could not delete profile"}, status=HTTP_400_BAD_REQUEST)
@@ -388,10 +388,18 @@ def get_portfolios_summary(request):
                 num_stocks = len(portfolio.stock_list)
                 for stock in stock_data:
                     # get data from db and combine with data pulled from api
-                    stock_db = Stock.objects.get(ticker=stock["symbol"], portfolio_id=portfolio.id)
-                    # re-calculate profit from stock's latest price
-                    profit = round(((decimal.Decimal(stock["latestPrice"]) - stock_db.buying_price) * stock_db.quality), 2)
-                    total_gain_loss += profit
+                    stocks_db = Stock.objects.filter(ticker=stock["symbol"], portfolio_id=portfolio.id)
+                    if len(stocks_db) > 0:
+                        for s in stocks_db:
+                            # re-calculate profit from stock's latest price
+                            profit = round(((decimal.Decimal(stock["latestPrice"]) - s.buying_price) * s.quality),
+                                           2)
+                            total_gain_loss += profit
+                    elif len(stocks_db) == 1:
+                        # re-calculate profit from stock's latest price
+                        profit = round(((decimal.Decimal(stock["latestPrice"]) - stocks_db[0].buying_price) * stocks_db[
+                            0].quality), 2)
+                        total_gain_loss += profit
                 data.append({
                     "name": portfolio.name,
                     "numStocks": num_stocks,
@@ -443,7 +451,12 @@ def add_stock(request, portfolio_pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_stock_data(request):
-    ticker = request.data['ticker']
+    stock_id = request.data['stock_id']
+    try:
+        stock = Stock.objects.get(id=stock_id)
+        ticker = stock.ticker
+    except ValueError:
+        ticker = stock_id
     base_url = 'https://sandbox.iexapis.com/stable/stock/'
     stock = search_stock(base_url, ticker)
     if 'Error' in stock:
@@ -451,6 +464,7 @@ def get_stock_data(request):
     else:
         # select data to send
         data = {
+            "id": stock_id,
             "symbol": stock["symbol"],
             "companyName": stock["companyName"],
             "latestPrice": stock["latestPrice"],
@@ -468,7 +482,12 @@ def get_stock_data(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_stock_recommendation(request):
-    ticker = request.data['ticker']
+    stock_id = request.data['stock_id']
+    try:
+        stock = Stock.objects.get(id=stock_id)
+        ticker = stock.ticker
+    except ValueError:
+        ticker = stock_id
     # Recommendation part
     stock_data = history_data(ticker)
     predicted_price = prediction(history_data(ticker, '1y'))
@@ -492,11 +511,17 @@ def get_stock_recommendation(request):
 @permission_classes([IsAuthenticated])
 def get_stock_history(request):
     if request.method == "POST":
+        stock_id = request.data['stock_id']
+        try:
+            stock = Stock.objects.get(id=stock_id)
+            ticker = stock.ticker
+        except ValueError:
+            ticker = stock_id
         time_interval = request.data['range']
         # only send date, close, volume
         close_data, volume_data, data = [], [], {}
         try:
-            history = history_data(ticker=request.data['ticker'], range=time_interval)
+            history = history_data(ticker=ticker, range=time_interval)
         except Exception:
             return Response({"error": "Could not retrieve stock history"}, status=HTTP_400_BAD_REQUEST)
         for i, value in enumerate(history):
@@ -526,7 +551,12 @@ def get_stock_history(request):
 def get_stock_prediction(request):
     if request.method == "POST":
         close_data, prediction_data, data = [], [], {}
-        ticker = request.data['ticker']
+        stock_id = request.data['stock_id']
+        try:
+            stock = Stock.objects.get(id=stock_id)
+            ticker = stock.ticker
+        except ValueError:
+            ticker = stock_id
         history = history_data(ticker=ticker, range='1y')
         for h in history:
             close_data.append({
@@ -576,9 +606,14 @@ def get_stock_news(request):
 def update_stock_share(request, portfolio_pk):
     if request.method == "POST":
         action = request.data['action']
-        ticker = request.data['ticker']
+        stock_id = request.data['stock_id']
+        try:
+            stock = Stock.objects.get(id=stock_id)
+            ticker = stock.ticker
+        except ValueError:
+            ticker = stock_id
+        portfolio = Portfolio.objects.get(id=portfolio_pk)
         quantity = int(request.data['quantity'])
-        stock = Stock.objects.get(ticker=ticker, portfolio_id=portfolio_pk)
         stock_price = search_stock_price(ticker)
         if not stock_price:
             return Response(stock_price, status=HTTP_400_BAD_REQUEST)
@@ -586,19 +621,36 @@ def update_stock_share(request, portfolio_pk):
         if action:
             if action == 'buy':
                 new_buying_price = decimal.Decimal(request.data['buying_price'])
-                new_quantity = stock.quality + quantity
-                stock.quality += new_quantity
-                stock.buying_price = new_buying_price
-                stock.profit = round(((decimal.Decimal(stock_price) - new_buying_price) * new_quantity), 2)
+                profit = round(((decimal.Decimal(stock_price) - new_buying_price) * quantity), 2)
+                Stock.objects.create(ticker=ticker, quality=quantity, profit=profit, buying_price=new_buying_price,
+                                     portfolio=portfolio)
+                portfolio.stock_list.append(ticker)
+                portfolio.save()
             elif action == 'sell':
                 new_quantity = stock.quality - quantity
                 stock.quality = new_quantity
                 stock.profit = round(((decimal.Decimal(stock_price) - stock.buying_price) * new_quantity), 2)
-            stock.save()
+                stock.save()
             return Response(status=HTTP_200_OK)
         else:
             return Response({"error": "Invalid action. Needs to be 'buy' or 'sell'"}, status=HTTP_400_BAD_REQUEST)
     return Response({"error": "Failed to update stock"}, status=HTTP_400_BAD_REQUEST)
+
+
+def get_transaction_stock_data(stock_from_db, stock_from_api):
+    profit = round(
+        ((decimal.Decimal(stock_from_api["latestPrice"]) - stock_from_db.buying_price) * stock_from_db.quality), 2)
+    return {
+        "id": stock_from_db.id,
+        "symbol": stock_from_api["symbol"],
+        "companyName": stock_from_api["companyName"],
+        "latestPrice": stock_from_api["latestPrice"],
+        "previousClose": stock_from_api["previousClose"],
+        "changePercent": stock_from_api["changePercent"],
+        "quality": stock_from_db.quality,
+        "buyingPrice": stock_from_db.buying_price,
+        "profit": profit
+    }
 
 
 @api_view(['GET'])
@@ -611,27 +663,20 @@ def get_all_stock_data(request, portfolio_pk):
             ticker_list = portfolio.stock_list
             tickers = ','.join(ticker_list)
             base_url = 'https://sandbox.iexapis.com/stable/stock/market/batch?symbols='
-            stock_data = search_stock_batch(base_url, tickers)
+            stock_batch_data = search_stock_batch(base_url, tickers)
             data = []
-            if portfolio.ptype == 'Transaction':
-                for stock in stock_data:
-                    # get data from db and combine with data pulled from api
-                    stock_db = Stock.objects.get(ticker=stock['symbol'], portfolio_id=portfolio_pk)
-                    # re-calculate profit from stock's latest price
-                    profit = round(((decimal.Decimal(stock["latestPrice"]) - stock_db.buying_price) * stock_db.quality),
-                                   2)
-                    data.append({
-                        "symbol": stock["symbol"],
-                        "companyName": stock["companyName"],
-                        "latestPrice": stock["latestPrice"],
-                        "previousClose": stock["previousClose"],
-                        "changePercent": stock["changePercent"],
-                        "quality": stock_db.quality,
-                        "buyingPrice": stock_db.buying_price,
-                        "profit": profit
-                    })
-            elif portfolio.ptype == 'Watchlist':
-                for stock in stock_data:
+            for stock in stock_batch_data:
+                stock_db = Stock.objects.filter(ticker=stock['symbol'], portfolio_id=portfolio_pk)
+                if portfolio.ptype == 'Transaction':  # get data from db and combine with data pulled from api
+                    if len(stock_db) > 1:
+                        for s in stock_db:
+                            # re-calculate profit from stock's latest price
+                            stock_data = get_transaction_stock_data(s, stock)
+                            data.append(stock_data)
+                    elif len(stock_db) == 1:
+                        stock_data = get_transaction_stock_data(stock_db[0], stock)
+                        data.append(stock_data)
+                elif portfolio.ptype == 'Watchlist':
                     # pick specific data we want to display and then send to front-end
                     data.append({
                         "symbol": stock["symbol"],
@@ -667,21 +712,19 @@ def get_latest_stock_news(request):
 @permission_classes([IsAuthenticated])
 def delete_stock(request, portfolio_pk):
     if request.method == "DELETE":
-        portfolio = Portfolio.objects.get(pk=portfolio_pk)
         stocks = request.data['stocks']
         if stocks:
-            for ticker in stocks:
-                # delete stock from Stock table if Transaction portfolio
-                if portfolio.ptype == "Transaction":
-                    stock = Stock.objects.get(portfolio_id=portfolio_pk, ticker=ticker)
-                    stock.delete()
+            for stock in stocks:
+                s_id, name = stock.split(':')
                 # delete from stock_list in Portfolio table
                 portfolio = Portfolio.objects.get(pk=portfolio_pk)
                 stock_list = portfolio.stock_list
-                print(stock_list)
                 if stock_list:
-                    stock_list.remove(ticker)
-                    print(stock_list)
+                    stock_list.remove(name)
                     portfolio.save()
+                # delete stock from Stock table if Transaction portfolio
+                if portfolio.ptype == "Transaction":
+                    stock = Stock.objects.get(id=s_id)
+                    stock.delete()
             return Response({"success": "Stock removed"}, status=HTTP_200_OK)
         return Response({"error": "Could not delete stocks"}, status=HTTP_400_BAD_REQUEST)

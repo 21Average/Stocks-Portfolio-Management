@@ -49,8 +49,11 @@ export default class RemoveStockModal extends Component {
         <Modal.Content>
           <Form>
             {stockList && stockList.length > 0 ? <Form.Group grouped>
-              {stockList.map(({name}, i) =>
-                <Form.Checkbox key={i} value={name} label={name} onChange={this.handleCheckBoxChange}/>)}
+              {stockList.map(({id, name, profit}, i) => {
+                profit = profit ? `- Profit: ${profit.toFixed(2)}` : '';
+                return <Form.Checkbox
+                  key={i} value={`${id}:${name}`} label={`${name} ${profit}`} onChange={this.handleCheckBoxChange}/>
+              })}
             </Form.Group> : <Header disabled>No stocks to delete</Header>}
           </Form>
         </Modal.Content>

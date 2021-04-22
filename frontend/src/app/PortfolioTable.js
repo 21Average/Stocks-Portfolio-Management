@@ -15,7 +15,7 @@ export default class PortfolioTable extends Component {
   componentDidMount() {
     const {pData} = this.props;
     let stockList = [];
-    pData.forEach(({symbol}) => stockList.push({"name": symbol}));
+    pData.forEach(({id, symbol, profit}) => stockList.push({"id": id, "name": symbol, "profit": profit}));
     this.setState({stockList, pData})
   }
 
@@ -30,12 +30,12 @@ export default class PortfolioTable extends Component {
     const watchlistHeaderRow = ['Symbol', 'Company', 'Latest Price', 'Previous Close', 'Change', 'Return YTD', 'PE Ratio', '52 Week Low', '52 Week High'];
 
     let headerRow = pType === 'Transaction' ? transactionHeaderRow : watchlistHeaderRow;
-    let bodyRow = pType === 'Transaction' ? pData.map(({symbol, companyName, latestPrice, quality, buyingPrice, profit}, i) => {
+    let bodyRow = pType === 'Transaction' ? pData.map(({id, symbol, companyName, latestPrice, quality, buyingPrice, profit}, i) => {
       let profitColour = profit >= 0 ? (profit > 0 ? 'green' : '') : 'red';
       return <Table.Row key={i}>
         <Table.Cell>{symbol}</Table.Cell>
         <Table.Cell>
-          <Link to={{pathname: `/stock/${symbol}`, state: {pType: pType, name: companyName}}}>{companyName}</Link>
+          <Link to={{pathname: `/stock/${id}`, state: {pType: pType, name: companyName}}}>{companyName}</Link>
         </Table.Cell>
         <Table.Cell>${latestPrice ? this.numberWithComma(latestPrice.toFixed(2)) : '-'}</Table.Cell>
         <Table.Cell>${buyingPrice ? this.numberWithComma(buyingPrice.toFixed(2)) : '-'}</Table.Cell>

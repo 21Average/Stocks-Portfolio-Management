@@ -49,7 +49,7 @@ export default class UpdateStockModal extends Component {
 
     if (this.checkValues(action, price, quantity)) {
       if (token) {
-        let dataToSend = {'ticker': stock['symbol'], 'quantity': quantity, 'action': 'sell'};
+        let dataToSend = {'stock_id': stock['id'], 'quantity': quantity, 'action': 'sell'};
         if (action === 'buy') {
           dataToSend['buying_price'] = price;
           dataToSend['action'] = 'buy'
@@ -78,7 +78,7 @@ export default class UpdateStockModal extends Component {
         <Container textAlign={'center'}>
           <Header as={'h4'}>Select an action:</Header>
           <Button.Group fluid>
-            <Button onClick={() => this.setState({action: 'buy', showError: false})} color={action === 'buy' ? 'blue' : null}>Update</Button>
+            <Button onClick={() => this.setState({action: 'buy', showError: false})} color={action === 'buy' ? 'blue' : null}>Buy</Button>
             <Button.Or/>
             <Button onClick={() => this.setState({action: 'sell', showError: false})} color={action === 'sell' ? 'blue' : null}>Sell</Button>
           </Button.Group>

@@ -11,4 +11,4 @@ class PortfolioSerializer(serializers.ModelSerializer):
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
-        fields = '__all__'
+        fields = ['id', 'ticker', 'quality', 'profit', 'buying_price', 'portfolio']

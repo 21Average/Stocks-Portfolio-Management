@@ -34,7 +34,7 @@ export default class App extends Component {
       }, {
         path: '/portfolio', component: Portfolio
       }, {
-        path: '/stock/:symbol', component: Stock
+        path: '/stock/:id', component: Stock
       },
       {
         path: '/settings', component: Settings

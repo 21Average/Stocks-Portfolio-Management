@@ -15,7 +15,6 @@ import {
   List,
   Menu,
   Segment,
-  Sidebar,
   Visibility,
 } from 'semantic-ui-react'
 

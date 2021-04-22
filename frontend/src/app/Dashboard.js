@@ -40,7 +40,7 @@ export default class Dashboard extends Component {
   };
 
   render() {
-    const {portfolioData, data, articles} = this.state;
+    const {portfolioData, articles} = this.state;
     const headerRow = ['Portfolio', 'Total Gain/Loss', 'Number of Stocks'];
 
     return <React.Fragment>
