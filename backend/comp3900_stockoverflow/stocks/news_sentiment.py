@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
+# Importing
 from nltk.tokenize import word_tokenize, sent_tokenize
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
@@ -25,21 +23,14 @@ import os
 import re
 # scikilearn.__version__ == 0.22.2
 
-
-# In[2]:
-
-
-#nltk
+#nltk download necessary packages
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('wordnet')
 
 
-# # 1. Benchmark - Using VadarSentiment
-
-# In[3]:
-
+# 1. Benchmark - Using VadarSentiment
 
 # New words and values to update the Lexicon.
 new_words = {
@@ -56,23 +47,14 @@ new_words = {
     'falling': -100
 }
 
-
-# In[4]:
-
-
 analyser = SentimentIntensityAnalyzer()
-# Example
-#score = analyser.polarity_scores("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.")
-#print(score)
 analyser.lexicon.update(new_words)
 # Example
-#score = analyser.polarity_scores("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.")
-#print(score)
+# score = analyser.polarity_scores("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.")
+# print(score)
 
 
-# # 2. Using LSTM model trained on IMDB dataset from tensorflow
-
-# In[5]:
+# 2. Using LSTM model trained on IMDB dataset from tensorflow
 
 
 def pad_to_size(vec, size):
@@ -92,9 +74,7 @@ def sample_predict(sample_pred_text, encoder, pad, model):
     return (predictions)
 
 
-# ## Load model
-
-# In[6]:
+# Load model
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 my_file = os.path.join(THIS_FOLDER, 'saved_model/lstm_encoder.pickel')
@@ -103,45 +83,23 @@ encoder_loaded = pickle.load(open(my_file, "rb"))
 my_file = os.path.join(THIS_FOLDER, 'saved_model/lstm')
 lstm_loaded = tf.keras.models.load_model(my_file)
 
-# Check its architecture
 lstm_loaded.summary()
 
-
-# In[7]:
-
-
-#new_prediction = sample_predict("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.",
+# new_prediction = sample_predict("Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow.",
 #                                encoder=encoder_loaded, pad=False, model=lstm_loaded)
-#print(new_prediction)
+# print(new_prediction)
 
 
-# # 3. Building a Neural Network and train on IMDB Dataset
+# 3. Building a Neural Network and train on IMDB Dataset
 
-# ## Text preprocessing
-
-# In[8]:
-
-
+# preprocessing
 TOP_WORDS = 10000
-
-
-# In[9]:
-
 
 stop_words = set(stopwords.words("english"))
 ps = PorterStemmer()
 
-
-# In[10]:
-
-
 word2index = imdb.get_word_index()
 word2index = {k: (v+3) for k, v in word2index.items()}
-#word_to_id["<PAD>"] = 0
-#word_to_id["<START>"] = 1
-#word_to_id["<UNK>"] = 2
-# Tweet preprocessing
-
 
 def clean_symbols(text):
 
@@ -168,18 +126,9 @@ def clean_words(news, dimension=TOP_WORDS):
         if sequence < dimension:
             results[sequence] = 1
 
-    #print("\nOriginal string:", news,"\n")
-    #print("\nIndex conversion:", test,"\n")
     results = np.reshape(results, (1, TOP_WORDS))
-    #print("\nConvert to vectors:", results,"\n")
     return results
 
-
-# ## Example
-# In[11]:
-#example_1 = "The movie was not good. The animation and the graphics were terrible. I would not recommend this movie."
-#example_2 = "it is so good"
-#example_3 = "Apple Stock Is Falling Again. Why That’s Not a Problem for the Dow."
 
 
 def predict_sentiment(x_test, NN):
@@ -191,48 +140,22 @@ def predict_sentiment(x_test, NN):
     return prediction
 
 
-# ## Load the model
-
-# In[12]:
-
+# Load the model
 my_file = os.path.join(THIS_FOLDER, 'saved_model/nn')
 NN_loaded = tf.keras.models.load_model(my_file)
 
-# Check its architecture
 NN_loaded.summary()
 
-#predict_sentiment("it is good and let's have a try", NN_loaded)
+# Example 
+# predict_sentiment("it is good and let's have a try", NN_loaded)
 
 
-# # SVC trained on another dataset
-
-# In[13]:
-
+# SVC trained on another dataset
 
 # making list stopwords for removing stopwords from our text
 stop = set(stopwords.words('english'))
 stop.update(punctuation)
 #print(stop)
-
-
-# In[14]:
-
-
-# this function return the part of speech of a word.
-def get_simple_pos(tag):
-    if tag.startswith('J'):
-        return wordnet.ADJ
-    elif tag.startswith('V'):
-        return wordnet.VERB
-    elif tag.startswith('N'):
-        return wordnet.NOUN
-    elif tag.startswith('R'):
-        return wordnet.ADV
-    else:
-        return wordnet.NOUN
-
-
-# In[15]:
 
 def cleanText(text):
     text = BeautifulSoup(text, "lxml").text
@@ -250,11 +173,7 @@ def cleanText(text):
 def join_text(text):
     return " ".join(text)
 
-
-# ## Load the model
-
-# In[16]:
-
+# Load the model
 my_file = os.path.join(THIS_FOLDER, 'saved_model/count_vector.pickel')
 # load pickle
 count_vec_loaded = pickle.load(open(my_file, "rb"))
@@ -263,10 +182,6 @@ count_vec_loaded = pickle.load(open(my_file, "rb"))
 my_file = os.path.join(THIS_FOLDER, 'saved_model/svc.pkl')
 svc_loaded = joblib.load(my_file)
 
-
-# In[17]:
-
-
 def svc_predict(svc, count_vec, news):
     news_processed = cleanText(news)
     news_processed = join_text(news_processed)
@@ -274,19 +189,12 @@ def svc_predict(svc, count_vec, news):
     test_news = count_vec.transform([news_processed]).todense()
     return svc.predict_proba(test_news)
 
-
-# In[18]:
-
-
 #print(svc_predict(svc_loaded, count_vec_loaded,
                   #"Investors are looking to buy more stocks"))
 
 
-# # Combine all models together to give the final rating
 
-# In[95]:
-
-
+# Combine all models together to give the final rating
 def predict_rating(news, if_print=False):
     benchmark_rating = analyser.polarity_scores(news)['compound']
 
@@ -306,17 +214,6 @@ def predict_rating(news, if_print=False):
         print(f'result from Neural Network: {rating_NN:.2f}')
         print(
             f"result from SVC: positive:{rating_svc[2]:.2f}, neutral:{rating_svc[1]:.2f}, negative:{rating_svc[0]:.2f}")
-
-    # if (benchmark_rating < 0.5 and rating_lstm < 0 and rating_NN < 0.5) or benchmark_rating < 0 or rating_NN < 0.2 or (rating_svc[0] > 0.5 and np.argmax(rating_svc) == 0):
-    #     return "Strong Negative"
-    # elif (benchmark_rating >= 0.5 and rating_lstm >= 0 and rating_NN >= 0.5) or (benchmark_rating >= 0.8 or rating_NN >= 0.8) or (rating_svc[2] > 0.5 and np.argmax(rating_svc) == 2):
-    #     return "Strong Positive"
-    # elif benchmark_rating >= 0.5 and rating_lstm >= 0 and rating_svc[-1] > rating_svc[0]:
-    #     return "Positive"
-    # elif benchmark_rating < 0.5 and rating_lstm < 0 or rating_svc[0] > rating_svc[-1]:
-    #     return "Negative"
-    # else:
-    #     return "Neutral"
     
     if np.argmax(rating_svc) == 2:
         # the news is in the positive side
@@ -349,6 +246,10 @@ def predict_rating(news, if_print=False):
             else:
                 return "Slightly Positive", rating_svc[2]
 
+
+
+
+# The following part uses news scraping and apply sentiment analysis - Experiment
 def predict_news_series(news):
     result = predict_rating(news['Headline'])
     news["Sentiment"] = result[0]
@@ -356,9 +257,6 @@ def predict_news_series(news):
     return news
 
 ## referene: https://towardsdatascience.com/stock-news-sentiment-analysis-with-python-193d4b4378d4
-
-
-# In[166]:
 # Import libraries
 def analyse_news_sentiment(tickers, n = 1):
 
@@ -422,34 +320,8 @@ def analyse_news_sentiment(tickers, n = 1):
     columns = ['Ticker', 'Date', 'Time', 'Headline', 'Link', 'Source']
     news = pd.DataFrame(parsed_news, columns=columns)
 
-    # scores = news['Headline'].apply(analyser.polarity_scores).tolist()
-    # df_scores = pd.DataFrame(scores)
-    # news = news.join(df_scores, rsuffix='_right')
-
-    # sentiments = news['Headline'].apply(predict_rating).tolist()
-    # df_sentiments = pd.DataFrame(sentiments)
-    # news = news.join(df_sentiments, rsuffix='_right')
-
-    # news.rename(columns={0: 'Sentiment'}, inplace=True)
     news = news.apply(predict_news_series, axis = 1)
     # View Data
     news['Date'] = pd.to_datetime(news.Date).dt.date
-
-    #unique_ticker = news['Ticker'].unique().tolist()
-    #news_dict = {name: news.loc[news['Ticker'] == name] for name in unique_ticker}
-
-    """ values = []
-    for ticker in tickers:
-        dataframe = news_dict[ticker]
-        dataframe = dataframe.set_index('Ticker')
-        #print('\n')
-        #print(dataframe.head())
-        mean = round(dataframe['compound'].mean(), 2)
-        values.append(mean)
-
-    df = pd.DataFrame(list(zip(tickers, values)), columns=[
-                    'Ticker', 'Mean Sentiment'])
-    df = df.set_index('Ticker')
-    df = df.sort_values('Mean Sentiment', ascending=False) """
 
     return news
