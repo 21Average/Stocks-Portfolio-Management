@@ -40,7 +40,7 @@ comp3900_stockoverflow/stocks’** folder, and run '''pip install -r requirement
 
   * Install node.js in your local environment.
     (Link: https://nodejs.org/en/)
-  * Go to the path  *‘capstone-project-3900-w16a-stock-overflow/frontend’*, and first run ```npm i```, then run ```npm start```
+  * Go to the path  **‘capstone-project-3900-w16a-stock-overflow/frontend’**, and first run ```npm i```, then run ```npm start```
   * the frontend will run on http://127.0.0.1:3000/
   * Then you could go to this address and start using the website
 
