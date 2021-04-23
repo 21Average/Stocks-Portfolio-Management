@@ -38,3 +38,10 @@ Week8 / Week9:
 3. Write functions that pulls data from stock api that will be displayed in graph for frontend
 4. Merge sentiment analysis functions into the project and update requirements.txt
 5. Prepare slides about sentiment analysis for the final demo
+
+Week10:
+1. Fix the error in news_sentiment.py and retrained the sentiment analysis model
+2. Implement news scraping techniques. This is the backup plan for News API functionality
+3. Prepare slides for sentiment analysis part of the project and presenti demo for this part
+4. Discussed with team member about final report and code submission.
+5. Help team members to write every part of the report
