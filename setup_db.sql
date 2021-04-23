@@ -1,5 +1,5 @@
-CREATE USER 3900postgres WITH PASSWORD '1234';
-ALTER USER 3900postgres WITH SUPERUSER;
-ALTER USER 3900postgres CREATEDB;
+CREATE USER postgres3900 WITH PASSWORD '1234';
+ALTER USER postgres3900 WITH SUPERUSER;
+ALTER USER postgres3900 CREATEDB;
 CREATE DATABASE comp3900;
-grant all privileges on database comp3900 to 3900postgres;
+grant all privileges on database comp3900 to postgres3900;
