@@ -19,7 +19,7 @@ capstone-project-3900-w16a-stock-overflow created by GitHub Classroom
           * Create a database name: comp3900, and set owner to postgres3900
 
 
-### For Backend Server
+### For Backend Server:
   * Install Python 3.8.3 in your local environment
   (Link: https://www.python.org/downloads/release/python-383/)
   
@@ -36,7 +36,7 @@ comp3900_stockoverflow/stocks’** folder, and run '''pip install -r requirement
   * The backend will run on http://127.0.0.1:8000/
 
 
-### For Frontend Server
+### For Frontend Server:
 
   * Install node.js in your local environment.
     (Link: https://nodejs.org/en/)
