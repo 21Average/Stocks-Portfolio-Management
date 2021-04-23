@@ -1,9 +1,9 @@
 # capstone-project-3900-w16a-stock-overflow
 capstone-project-3900-w16a-stock-overflow created by GitHub Classroom
 
-Since we do not have a deployed instance of our application, the method to use our app is to run in your environment.
+#### Since we do not have a deployed instance of our application, the method to use our app is to run in your environment.
 
-After pulling our project from Github, in order to run our Application. you need to follow the following steps:
+#### After pulling our project from Github, in order to run our Application. you need to follow the following steps:
 
 ### For Database:
   **The system requires PostgreSQL installed.**
