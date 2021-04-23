@@ -1,0 +1,38 @@
+Week 1:
+Group formed. I volunteered as the Scrum master for Jira. Discussed and 
+collaborated with the group regarding which project and features we wanted to 
+implement. Wrote the review of existing stock portfolio manger services.
+
+Week 2:
+Discussed with group on finalizing the minimum 8 features/functions. Discussed 
+structure of the system architecture and which services/languages we would use. 
+The group decided to do more personal research on the available options and to 
+finalise our choices at the next group meeting in week 3. Started finalising the 
+project proposal regarding the user stories, architecture, and flowchart.
+
+Week 3:
+Finalised the 8 functionalities. Edited the existing user stories and added in 
+missing ones regarding the stock API features. Wrote the user stories on Jira. 
+Created the roadmap/Gantt chart. Created the first sprint schedule. 
+Wrote System architecture API overview. 
+
+Week 4:
+Discussion session on project model. Researched possible front end options, 
+created a shortlist of stock data APIs and news article APIs.
+
+Week 5:
+Presentation for the demo A. Was not able to properly work on project due to
+course requirements from another course.
+
+Week 7:
+Implemented basic version of the News Article API function. Brainstormed best
+method for filtering and presenting news articles.
+
+Week 8:
+Practice working with React and created mock ups with the landing pages.
+
+Week 9:
+Designed and uploaded final landing page and news article functionality pages.
+
+Week 10:
+Clean up of code and report writing.
