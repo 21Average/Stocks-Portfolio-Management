@@ -1,0 +1,48 @@
+Week 1:
+We formed a group and named it 'StockOverflow'.
+We all agreed to work on the project ‘Stock Portfolio Management’.
+We create a 'Jira' account and link to Github.
+We create a Google doc for proposal and collaborate on it.
+
+Week 2:
+We discussed what functionalities we want on our APP.
+We discussed Software architecture, backend: django, frontend: React
+We started to work on the proposal and write a few user stories.
+We decided to use APIs to pull real-time data to achieve some functionalities.
+
+Week 3:
+Add more user stories and acceptance criteria for the features like sentiment analysis, price prediction, Alert, Recommendation.
+I set up the django project and pushed to Github.
+I set up the database.
+
+Week 4:
+We finalized the proposal.
+Work on the Django models: Stocks, User.
+Research on auth token.
+
+Week 5:
+I implemented the user authentication (Login and Register) part for the backend.
+I participated in a team retrospective.
+I did research on Customizing authentication models for django.
+
+Week 6:
+I worked on the watchlist and portfolio part, developed ‘stocks’ and ‘portfolio models’ and tested it out.
+
+Week 7:
+I developed ‘add’ and ‘remove’ selected portfolio or watchlist features.
+I developed ‘add’ and ‘remove’  stock features from watchlist and portfolio.
+I participated in a team retrospective.
+
+Week 8:
+I developed ‘remove’ selected stock within a portfolio or watchlist features.
+I developed a stock Information page for the backend.
+
+Week 9:
+I developed the ‘buy’ and ‘sell’ functions for selected stocks.
+I developed a ‘profit’ function for selected stocks.
+
+Week 10:
+Find a new ‘stock news’ API, and add implementation for retrieving json data from the API.
+I added new fields for stocks called ‘industry’ and ‘company’, and tried to find a way to implement ‘recommendation’ features.
+
+
